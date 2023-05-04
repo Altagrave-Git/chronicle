@@ -1,0 +1,12 @@
+@use '../../App.scss' as *;
+
+.home {
+  @include flex(center, center);
+
+  min-height: 100vh;
+}
+
+button {
+  height: 40px;
+  width: 150px;
+}
