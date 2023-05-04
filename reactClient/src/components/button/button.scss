@@ -1,0 +1,44 @@
+@use '../../App.scss' as *;
+
+.btn {
+    background-color: #fff;
+    border: 1px solid #000;
+    border-radius: 5px;
+    color: #000;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    transition: all 0.2s ease-in-out;
+    &:hover {
+        background-color: $black;
+        color: $white;
+    }
+
+    &.btn-black {
+        background-color: $black;
+        color: $white;
+        &:hover {
+            background-color: $white;
+            color: $black;
+        }
+    }
+
+    &.btn-white {
+        background-color: $white;
+        color: #000;
+        &:hover {
+            background-color: $black;
+            color: $white;
+        }
+    }
+
+    &.btn-red {
+        background-color: $red;
+        color: $white;
+        &:hover {
+            background-color: $white;
+            color: $red;
+        }
+    }
+}
