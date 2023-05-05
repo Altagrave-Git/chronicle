@@ -1,7 +1,10 @@
-const PortfolioView = () => {
+import Aside from "../../components/aside/aside";
+
+const PortfolioView = ({gitData}) => {
   return (
     <main>
-      <h1>Portfolio</h1>
+      <section>.</section>
+      <Aside gitData={gitData} />
     </main>
   )
 }

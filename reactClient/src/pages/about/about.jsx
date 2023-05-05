@@ -1,7 +1,10 @@
-const AboutView = () => {
+import Aside from "../../components/aside/aside";
+
+const AboutView = ({gitData}) => {
   return (
     <main>
-      <h1>About</h1>
+      <section>.</section>
+      <Aside gitData={gitData} />
     </main>
   )
 }

@@ -1,7 +1,10 @@
-const BlogView = () => {
+import Aside from "../../components/aside/aside";
+
+const BlogView = ({gitData}) => {
   return (
     <main>
-      <h1>Blog</h1>
+      <section>.</section>
+      <Aside gitData={gitData} />
     </main>
   );
 }
