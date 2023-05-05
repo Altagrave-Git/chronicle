@@ -31,22 +31,27 @@ const Header = () => {
   }, [location]);
 
   return (
-    <header className="header" ref={headerRef}>
-      <div className="container">
-        <Link to="/">
-          <Logo />
-        </Link>
-        <ul className="header-links">
-          {
-            headerNav.map((nav, index) => (
-              <li key={index} className={index === active ? "active" : ""}>
-                <Link to={nav.path}>{nav.label}</Link>
-              </li>
-            ))
-          }
-        </ul>
+    <>
+      <header className="header" ref={headerRef}>
+        <div className="container">
+          <Link className="logo-link" to="/">
+            <Logo />
+          </Link>
+          <ul className="header-links">
+            {
+              headerNav.map((nav, index) => (
+                <li key={index} className={index === active ? "active" : ""}>
+                  <Link to={nav.path}>{nav.label}</Link>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+      </header>
+      <div className="header-spacer">
+        <div />
       </div>
-    </header>
+    </>
   );
 }
 
