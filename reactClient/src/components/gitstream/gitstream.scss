@@ -1,1 +1,59 @@
 @use '../../App.scss' as *;
+
+.gitstream {
+  border-radius: 15px;
+
+  .git-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: $white2;
+    text-shadow: 0px 0px 5px #ffffff88;
+  }
+
+  .git-subtitle {
+    font-weight: 500;
+    color: $white2;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .git-user {
+    @include flex(center, center);
+    color: $yellow;
+    padding: 0.5rem 1rem;
+    text-shadow: 0px 0px 5px #ffe15088;
+
+    &:hover {
+      background-color: #ffffff15;
+    }
+
+    img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 1rem;
+    }
+  }
+
+  .git-repo {
+    @include flex(unset, center);
+    flex-direction: column;
+    color: $white2;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    background-color: #ffffff08;
+    padding: 0.3rem 1.5rem;
+    border-radius: 10px;
+
+    &:hover {
+      opacity: 1;
+      background-color: #ffffff15;
+    }
+
+    > .name {
+      font-weight: 600;
+      color: $yellow2;
+      text-shadow: 0px 0px 5px #ff000088;
+    }
+  }
+}
