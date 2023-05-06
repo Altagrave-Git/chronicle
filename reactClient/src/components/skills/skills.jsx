@@ -11,9 +11,10 @@ import { ReactComponent as DjangoLogo } from '../../icons/django.svg';
 import { ReactComponent as RestLogo } from '../../icons/rest.svg';
 import { ReactComponent as PostgresLogo } from '../../icons/postgresql.svg';
 import { ReactComponent as SqliteLogo } from '../../icons/sqlite.svg';
-import { ReactComponent as GithubLogo } from '../../icons/github.svg';
+import { ReactComponent as GitLogo } from '../../icons/git.svg';
 import { ReactComponent as NginxLogo } from '../../icons/nginx.svg';
 import { ReactComponent as GunicornLogo } from '../../icons/gunicorn.svg';
+import { ReactComponent as LinuxLogo } from '../../icons/linux.svg';
 import { ReactComponent as BashLogo } from '../../icons/bash.svg';
 import { ReactComponent as AnacondaLogo } from '../../icons/anaconda.svg';
 
@@ -42,7 +43,7 @@ const Skills = () => {
                           Sass
                         </li>
                         <li>
-                          <JavascriptLogo />
+                          <JavascriptLogo className="javascript-logo" />
                           JavaScript
                         </li>
                         <li>
@@ -84,8 +85,8 @@ const Skills = () => {
                     <h3>DevOps</h3>
                     <ul>
                         <li>
-                          <GithubLogo className="github-logo" />
-                          GitHub
+                          <GitLogo className="git-logo" />
+                          Git
                         </li>
                         <li>
                           <NginxLogo />
@@ -94,6 +95,10 @@ const Skills = () => {
                         <li>
                           <GunicornLogo className="gunicorn-logo" />
                           Gunicorn
+                        </li>
+                        <li>
+                          <LinuxLogo className="linux-logo" />
+                          Linux
                         </li>
                         <li>
                           <BashLogo className="bash-logo" />
