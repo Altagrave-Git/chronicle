@@ -4,19 +4,24 @@
   .bio {
     .title {
       color: $white2;
-      text-shadow: 0px 0px 5px $white3;
       font-weight: 600;
       font-size: 2.5rem;
+
+      @include mobile {
+        font-size: 2rem;
+      }
     }
 
     .job {
       color: $yellow2;
-      text-shadow: 0px 0px 5px #ffffff33;
+      font-weight: 500;
+      font-size: 1.5rem;
     }
 
     p {
       color: $white3;
       font-weight: 500;
+      font-size: 1.1rem;
     }
   }
 }
