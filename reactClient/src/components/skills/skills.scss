@@ -31,7 +31,7 @@
         flex-direction: row;
         flex-wrap: wrap;
         align-items: center;
-        justify-content: space-around;
+        justify-content: space-between;
         width: 100%;
         margin-top: 1rem;
         margin-bottom: 1rem;
@@ -43,15 +43,15 @@
           justify-content: center;
           margin-top: 1rem;
           margin-bottom: 1rem;
-
-          .github-logo {
-            fill: $white;
-            stroke: $white;
-            color: $white;
-          }
+          font: icon;
 
           .gunicorn-logo {
             width: 4.5rem;
+          }
+
+          .linux-logo {
+            width: 4rem;
+            margin-bottom: 1rem;
           }
 
           .bash-logo {
