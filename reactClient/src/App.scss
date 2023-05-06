@@ -92,6 +92,20 @@ section {
   max-width: 600px;
   padding: 0 3rem;
 
+  &.fixed {
+    @include desktop {
+      position: fixed;
+      z-index: 1;
+      height: calc(100vh - 16rem);
+    }
+  }
+
+  &.placeholder {
+    @include tablet {
+      display: none;
+    }
+  }
+
   @include tablet {
     width: 100%;
     margin: auto;
