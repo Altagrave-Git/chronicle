@@ -5,6 +5,7 @@
   "license": "ISC",
   "description": "Create React App for Vite",
   "main": "vite.config.js",
+  "proxy": "http://localhost:8000",
   "scripts": {
     "start": "vite --port 3000 --open",
     "dev": "vite --port 3000 --open",
@@ -12,6 +13,7 @@
     "serve": "vite preview"
   },
   "dependencies": {
+    "axios": "^1.4.0",
     "octokit": "^2.0.14",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
