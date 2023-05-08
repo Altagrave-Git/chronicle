@@ -1,6 +1,7 @@
 import React from "react";
 import './home.scss';
-import Content from "../../components/content/content";
+import GitStream from "../../components/gitstream/gitstream";
+import Skills from "../../components/skills/skills";
 
 const HomeView = ({gitData}) => {
 
@@ -14,7 +15,10 @@ const HomeView = ({gitData}) => {
         </p>
       </section>
       <section className="placeholder"></section>
-      <Content gitData={gitData} className={"home"} />
+      <aside className="home">
+        <Skills />
+        <GitStream gitData={gitData} />
+      </aside>
     </main>
   )
 };
