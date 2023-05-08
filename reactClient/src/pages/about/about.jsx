@@ -1,10 +1,10 @@
-import Content from "../../components/content/content";
-
-const AboutView = ({gitData}) => {
+const AboutView = () => {
   return (
     <main>
       <section>.</section>
-      <Content gitData={gitData} />
+      <aside className="about">
+        <h1>About</h1>
+      </aside>
     </main>
   )
 }
