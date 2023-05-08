@@ -1,11 +1,11 @@
-import Content from "../../components/content/content";
 import { useState, useEffect } from 'react';
 import ProjectCard from "../../components/projectcard/projectcard";
-import Project from '../../components/project/project';
+import ProjectDetail from "../../components/projectdetail/projectdetail";
 
-const PortfolioView = ({ gitData }) => {
+const PortfolioView = () => {
 
   const [portfolioData, setPortfolioData] = useState([]);
+  const [projectDetail, setProjectDetail] = useState({});
 
   useEffect(() => {
     fetch('http://127.0.0.1:8000/portfolio')
@@ -22,13 +22,15 @@ const PortfolioView = ({ gitData }) => {
           {portfolioData &&
             portfolioData.map((project, index) => {
               return (
-                <ProjectCard key={index} project={project} />
+                <ProjectCard key={index} project={project} click={setProjectDetail} />
               )
             })
           }
         </div>
       </section>
-      <Content />
+      <aside className="portfolio">
+          <ProjectDetail project={projectDetail} />
+      </aside>
     </main>
   )
 }
