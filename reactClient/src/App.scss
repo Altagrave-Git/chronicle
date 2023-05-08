@@ -42,6 +42,27 @@ $font-family: "Montserrat", sans-serif;
   flex-direction: $flex-direction;
 }
 
+::-webkit-scrollbar-track {
+  background-color: $black;
+}
+
+::-webkit-scrollbar {
+  width: 0.5rem;
+  background-color: $black;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: $red2;
+  border-radius: 0.5rem;
+  border: 0.1rem solid $black2;
+
+  &:hover {
+    background-color: $red;
+  }
+}
+
+
+
 * {
   box-sizing: border-box;
   padding: 0;
@@ -88,12 +109,12 @@ main {
 }
 
 section {
-  width: 50%;
   max-width: 600px;
-  padding: 0 3rem;
+  padding: 0 1.5rem;
 
   &.fixed {
     @include desktop {
+      width: 45%;
       position: fixed;
       z-index: 1;
       height: calc(100vh - 16rem);
@@ -118,9 +139,9 @@ section {
 }
 
 aside {
-  width: 50%;
+  width: 55%;
   max-width: 720px;
-  padding: 0 3rem;
+  padding: 0 1.5rem;
 
   @include tablet {
     width: 100%;
