@@ -1,9 +1,12 @@
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-#3jd!2lp62jy_^#r$9*(81%ikvh8fre@_$$(n=g*p@30^(qqam'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
@@ -34,6 +37,16 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'djangoServer.urls'
+
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://10.0.0.219:5173'
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
 
 # TEMPLATES = [
 #     {
@@ -95,7 +108,7 @@ REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
         'rest_framework.renderers.BrowsableAPIRenderer',
-    ]
+    ],
 }
 
 LANGUAGE_CODE = 'en-us'
@@ -106,18 +119,12 @@ USE_I18N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_WHITELIST = [
-    'http://localhost:3000'
-]
-
 STATIC_URL = '/static/'
 
 # STATIC_URL = '/assets/'
 
 # if DEBUG:
-#     STATICFILES_DIRS = [
-#         os.path.join(BASE_DIR, 'reactClient/dist/assets')
-#     ]
+#     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'reactClient/dist/assets')]
 # else:
 #     STATIC_ROOT = '/assets/'
 
