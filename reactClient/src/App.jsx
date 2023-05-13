@@ -8,11 +8,12 @@ import AboutView from './pages/about/about';
 import { Octokit } from "https://cdn.skypack.dev/octokit?dts";
 import { useState, useEffect } from 'react';
 
+const apiToken = import.meta.env.VITE_GITHUB_TOKEN;
+const octokit = new Octokit({ auth: apiToken }, { userAgent: 'Altagrave-Git' });
 
 const App = () => {
-  const apiToken = import.meta.env.VITE_GITHUB_TOKEN;
-  const octokit = new Octokit({ auth: apiToken }, { userAgent: 'Altagrave-Git' });
   const [gitData, setGitData] = useState([]);
+  const [auth, setAuth] = useState(false);
 
   useEffect(() => {
     octokit.request('GET /users/Altagrave-Git/repos', {
@@ -23,7 +24,16 @@ const App = () => {
       });
   }, []);
 
-  console.log(gitData)
+  console.log(gitData);
+
+  useEffect(() => {
+    fetch(import.meta.env.VITE_CHRONICLE_URL)
+      .then(response => response.json())
+      .then(data => {
+        console.log(data);
+        setAuth(data[1].auth);
+      });
+  }, [])
 
   return (
     <BrowserRouter>
