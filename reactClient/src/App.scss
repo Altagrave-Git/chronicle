@@ -2,8 +2,10 @@
 
 $black: #0f0f0f;
 $black2: #1f1f1fcc;
+$black3: #333333aa;
 $red: #DE5F3C;
 $red2: #DE5F3Ccc;
+$red3: #DE5F3C88;
 $white: #f0f0f0;
 $white2: #f0f0f0cc;
 $white3: #f0f0f0aa;
@@ -52,12 +54,13 @@ $font-family: "Montserrat", sans-serif;
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: $red2;
+  background-color: #555555;
   border-radius: 0.5rem;
-  border: 0.1rem solid $black2;
+  border: 2px solid $black;
 
   &:hover {
-    background-color: $red;
+    background-color: $red2;
+    border: 1px solid $red2;
   }
 }
 

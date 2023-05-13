@@ -5,6 +5,7 @@
   width: 100%;
   background-color: $black;
   box-shadow: $box-shadow;
+  z-index: 1000;
 
   @include tablet {
     @include flex(center, center);

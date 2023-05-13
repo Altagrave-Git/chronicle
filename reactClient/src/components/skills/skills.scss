@@ -56,6 +56,10 @@
           font-weight: 500;
           color: $white;
 
+          @include mobile {
+            width: calc(100% / 3);
+          }
+
           .gunicorn-logo {
             width: 4.5rem;
           }

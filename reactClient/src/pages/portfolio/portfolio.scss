@@ -1,0 +1,32 @@
+@use '../../App.scss' as *;
+
+@include desktop {
+  section.portfolio {
+    width: 35%;
+    max-width: 400px;
+    top: 4rem;
+  }
+  
+  aside.portfolio {
+    width: 65%;
+    max-width: 920px;
+  }
+}
+
+.project-card {
+  margin-bottom: 1rem;
+  border-radius: 10px;
+  background-color: #444;
+  padding-bottom: 1rem;
+
+  &.next-card {
+    transform: scale(0.9);
+    filter: brightness(0.5);
+  }
+
+  &.prev-card {
+    transform: scale(0.9);
+    filter: brightness(0.5);
+  }
+}
+
