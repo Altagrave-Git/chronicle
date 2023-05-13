@@ -1,33 +1,83 @@
 import { useState, useEffect } from 'react';
 import ProjectCard from "../../components/projectcard/projectcard";
 import ProjectDetail from "../../components/projectdetail/projectdetail";
+import './portfolio.scss';
 
 const PortfolioView = () => {
-
   const [portfolioData, setPortfolioData] = useState([]);
   const [projectDetail, setProjectDetail] = useState({});
+  const [activeIndex, setActiveIndex] = useState(0);
 
   useEffect(() => {
-    fetch('http://127.0.0.1:8000/portfolio')
+    fetch(import.meta.env.VITE_CHRONICLE_URL + '/projects/')
       .then(response => response.json())
       .then(data => setPortfolioData(data));
   }, []);
 
   console.log(portfolioData)
 
+  const handlePrev = () => {
+    if (activeIndex === 0) {
+      setActiveIndex(portfolioData.length - 1);
+    } else {
+      setActiveIndex(activeIndex - 1);
+    }
+  }
+
+  const handleNext = () => {
+    if (activeIndex === portfolioData.length - 1) {
+      setActiveIndex(0);
+      setProjectDetail(portfolioData[0]);
+    } else {
+      setActiveIndex(activeIndex + 1);
+      setProjectDetail(portfolioData[activeIndex + 1]);
+    }
+  }
+
+  useEffect(() => {
+    setProjectDetail(portfolioData[activeIndex]);
+  }, [activeIndex, portfolioData])
+
+  useEffect(() => {
+    if (portfolioData.length > 0) {
+      const prev = document.querySelector('.prev-container');
+      const active = document.querySelector('.active-container');
+      const next = document.querySelector('.next-container');
+      const prevCard = document.querySelector('.prev-card');
+      const activeCard = document.querySelector('.active-card');
+      const nextCard = document.querySelector('.next-card');
+  
+      prev.appendChild(prevCard);
+      active.appendChild(activeCard);
+      next.appendChild(nextCard);
+    }
+  }, [activeIndex, portfolioData])
+
   return (
     <main>
-      <section>
+      <section className="portfolio fixed">
+      <button onClick={() => handlePrev()} className="btn-prev">Prev</button>
         <div className="portfolio">
+          <div className="prev-container"></div>
+          <div className="active-container"></div>
+          <div className="next-container"></div>
           {portfolioData &&
             portfolioData.map((project, index) => {
-              return (
-                <ProjectCard key={index} project={project} click={setProjectDetail} />
-              )
+              if (index === activeIndex) {
+                return <ProjectCard key={index} project={project} click={setProjectDetail} ordering="active-card" />
+              } else if (index === activeIndex - 1 || (activeIndex === 0 && index === portfolioData.length - 1)) {
+                return <ProjectCard key={index} project={project} click={handlePrev} ordering="prev-card" />
+              } else if (index === activeIndex + 1 || (activeIndex === portfolioData.length - 1 && index === 0)) {
+                return <ProjectCard key={index} project={project} click={handleNext} ordering="next-card" />
+              } else {
+                return <ProjectCard key={index} project={project} click={() => {return}} />
+              }
             })
           }
         </div>
+        <button onClick={() => handleNext()} className="btn-next">Next</button>
       </section>
+      <section className="portfolio placeholder"></section>
       <aside className="portfolio">
           <ProjectDetail project={projectDetail} />
       </aside>
