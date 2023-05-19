@@ -16,6 +16,7 @@ const PortfolioView = () => {
 
   console.log(portfolioData)
 
+  // Rotate active index state backwards
   const handlePrev = () => {
     if (activeIndex === 0) {
       setActiveIndex(portfolioData.length - 1);
@@ -24,6 +25,7 @@ const PortfolioView = () => {
     }
   }
 
+  // Rotate active index state forwards
   const handleNext = () => {
     if (activeIndex === portfolioData.length - 1) {
       setActiveIndex(0);
@@ -55,8 +57,7 @@ const PortfolioView = () => {
 
   return (
     <main>
-      <section className="portfolio fixed">
-      <button onClick={() => handlePrev()} className="btn-prev">Prev</button>
+      <section className="portfolio fixed active">
         <div className="portfolio">
           <div className="prev-container"></div>
           <div className="active-container"></div>
@@ -75,7 +76,6 @@ const PortfolioView = () => {
             })
           }
         </div>
-        <button onClick={() => handleNext()} className="btn-next">Next</button>
       </section>
       <section className="portfolio placeholder"></section>
       <aside className="portfolio">
