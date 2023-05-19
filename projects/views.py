@@ -2,11 +2,13 @@ from rest_framework.response import Response
 from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, AppSerializer, AppSectionSerializer, AppImageSerializer, SnippetSerializer
 from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppImage, Snippet
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from rest_framework import permissions
 from rest_framework import status
 
 
 # CRUD for projects, apps, and project images
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def projects(request):
     # GET all projects
     if request.method == 'GET':
@@ -26,7 +28,9 @@ def projects(request):
             return Response(serializer.errors)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
+
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def project(request, project_id):
     try:
         project = Project.objects.get(id=project_id)
@@ -59,6 +63,7 @@ def project(request, project_id):
     
 
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def project_sections(request, project_id):
     # GET all project sections
     if request.method == 'GET':
@@ -79,6 +84,7 @@ def project_sections(request, project_id):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def project_section(request, project_id, section_id):
     try:
         section = ProjectSection.objects.get(id=section_id)
@@ -109,6 +115,7 @@ def project_section(request, project_id, section_id):
     
 
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def project_images(request, project_id):
     # GET all project images
     if request.method == 'GET':
@@ -129,6 +136,7 @@ def project_images(request, project_id):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def project_image(request, project_id, image_id):
     try:
         project_image = ProjectImage.objects.get(id=image_id)
@@ -159,6 +167,7 @@ def project_image(request, project_id, image_id):
 
     
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def apps(request, project_id):
     # GET all apps
     if request.method == 'GET':
@@ -177,7 +186,9 @@ def apps(request, project_id):
             return Response(serializer.errors)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
+
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def app(request, project_id, app_id):
     try:
         app = App.objects.get(id=app_id)
@@ -208,6 +219,7 @@ def app(request, project_id, app_id):
     
 
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def app_images(request, project_id, app_id):
     # GET all app images
     if request.method == 'GET':
@@ -228,6 +240,7 @@ def app_images(request, project_id, app_id):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def app_image(request, project_id, app_id, image_id):
     try:
         app_image = AppImage.objects.get(id=image_id)
@@ -258,6 +271,7 @@ def app_image(request, project_id, app_id, image_id):
     
 
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def app_sections(request, project_id, app_id):
     # GET all app sections
     if request.method == 'GET':
@@ -278,6 +292,7 @@ def app_sections(request, project_id, app_id):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def app_section(request, project_id, app_id, section_id):
     try:
         app_section = AppSection.objects.get(id=section_id)
@@ -308,6 +323,7 @@ def app_section(request, project_id, app_id, section_id):
     
 
 @api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def snippets(request, project_id):
     # GET all snippets
     if request.method == 'GET':
@@ -328,6 +344,7 @@ def snippets(request, project_id):
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def snippet(request, project_id, snippet_id):
     try:
         snippet = Snippet.objects.get(id=snippet_id)
