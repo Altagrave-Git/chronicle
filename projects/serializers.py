@@ -1,16 +1,21 @@
 from rest_framework import serializers
-from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppImage, Snippet, LANGUAGE_CHOICES, STYLE_CHOICES
+from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppImage, Snippet, Technology, LANGUAGE_CHOICES, STYLE_CHOICES
 
 class ProjectSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     category = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=1000)
+    tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
     site = serializers.URLField()
     repo = serializers.URLField()
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     apps = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
     snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
+
+    def get_tech(self, obj):
+        tech = TechnologySerializer(obj.tech.all(), many=True).data
+        return tech
 
     def get_sections(self, obj):
         sections = ProjectSectionSerializer(obj.sections.all(), many=True).data
@@ -50,6 +55,7 @@ class ProjectSectionSerializer(serializers.Serializer):
     project = serializers.CharField(max_length=100)
     images = serializers.SerializerMethodField(allow_null=True)
     type = serializers.ChoiceField(choices=ProjectSection.SECTION_TYPES)
+    order = serializers.IntegerField(default=0, allow_null=True)
 
     def get_images(self, obj):
         images = ProjectImageSerializer(obj.images.all(), many=True).data
@@ -63,6 +69,7 @@ class ProjectSectionSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.project = validated_data.get('project', instance.project)
         instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
         instance.save()
         return instance
     
@@ -129,6 +136,7 @@ class AppSectionSerializer(serializers.Serializer):
     app = serializers.CharField(max_length=100)
     images = serializers.SerializerMethodField(allow_null=True)
     type = serializers.ChoiceField(choices=AppSection.SECTION_TYPES)
+    order = serializers.IntegerField(default=0, allow_null=True)
 
     def get_images(self, obj):
         images = AppImageSerializer(obj.images.all(), many=True).data
@@ -142,6 +150,7 @@ class AppSectionSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.app = validated_data.get('app', instance.app)
         instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
         instance.save()
         return instance
     
@@ -200,3 +209,23 @@ class SnippetSerializer(serializers.Serializer):
     class Meta:
         model = Snippet
         fields = ['id', 'project', 'project_section', 'app', 'app_section', 'title', 'code', 'highlighted', 'language', 'style']
+
+
+class TechnologySerializer(serializers.Serializer):
+    tech = serializers.CharField(max_length=100)
+
+    def get_projects(self, obj):
+        projects = ProjectSerializer(obj.projects.all(), many=True).data
+        return projects
+
+    def create(self, validated_data):
+        return Technology.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.tech = validated_data.get('tech', instance.tech)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = Technology
+        fields = ['tech']
