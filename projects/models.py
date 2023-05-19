@@ -4,30 +4,45 @@ from pygments.styles import get_all_styles
 from pygments.formatters.html import HtmlFormatter
 from pygments import highlight
 
+class Technology(models.Model):    
+    tech = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.tech
+    
+    class Meta:
+        ordering = ['tech']
+
+
 class Project(models.Model):
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
+    tech = models.ManyToManyField(Technology, related_name='projects')
     site = models.URLField(blank=True, null=True)
     repo = models.URLField(blank=True, null=True)
+    order = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.name.replace(" ", "-")
     
     class Meta:
-        ordering = ['name']
+        ordering = ['order', 'name']
 
 
 class ProjectSection(models.Model):
     SECTION_TYPES = (
         ('text', 'Text'),
         ('list', 'List'),
+        ('table', 'Table'),
+        ('other', 'Other')
     )
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     type = models.CharField(max_length=100, choices=SECTION_TYPES, default='text')
+    order = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.project.name + ' - ' + self.title
@@ -89,6 +104,7 @@ class AppSection(models.Model):
     title = models.CharField(max_length=100)
     description = models.TextField(max_length=1000)
     type = models.CharField(max_length=100, choices=SECTION_TYPES, default='other')
+    order = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
         return self.app.project.name + ': ' + self.app.name + ' - ' + self.description[:50]
@@ -160,3 +176,5 @@ class Snippet(models.Model):
         self.highlighted = highlight(self.code, lexer, formatter)
         
         super().save(*args, **kwargs)
+
+
