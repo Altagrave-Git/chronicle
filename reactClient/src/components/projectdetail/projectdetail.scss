@@ -1,20 +1,90 @@
 @use '../../App.scss' as *;
 
 .project-detail {
+  max-width: 100%;
+  overflow-x: hidden;
+  padding-bottom: 4rem;
+
+  .btn-back {
+    display: flex;
+    align-items: center;
+    width: fit-content;
+    font-size: 1.25rem;
+    border-radius: 8px;
+    padding: 0.2rem 0.5rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    @include desktop {
+      display: none;
+    }
+
+    svg {
+      height: 4rem;
+      width: 2rem;
+      cursor: pointer;
+      fill: #ff5555;
+      filter: drop-shadow(0 0 1px #ff5555);
+    }
+
+    div {
+      font-weight: 700;
+      color: #e1e1e1;
+    }
+  }
+
   &__header{
     display: flex;
     justify-content: space-between;
 
     a {
-      display: inline-block;
+      display: flex;
+      align-items: center;
+      font-size: 1.15rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 20px;
+      width: 8rem;
+      color: #fff;
+      border: 1px outset #fff4;
+
+      &.website {
+        margin-bottom: 1rem;
+        background-color: #e63946;
+      }
+
+      &.github {
+        background-color: #6c757d;
+      }
+
       svg,
       g {
-        height: 3rem;
+        height: 1.5rem;
+        width: 1.5rem;
         cursor: pointer;
         fill: #fff;
       }
 
+      svg {
+        margin-right: 0.5rem;
+      }
+
       &:hover {
+        &.github,
+        &.website {
+          color: #ccc;
+        }
+
+        &.github {
+          background-color: #5a6268;
+        }
+
+        &.website {
+          background-color: #cc0000;
+        }
+
         svg,
         g {
           fill: #ccc;
@@ -66,6 +136,7 @@
         font-weight: 400;
         margin-bottom: 0.3rem;
         color: $white;
+        list-style-type: disc;
       }
     }
   }
@@ -92,7 +163,7 @@
 
     svg {
       height: 2rem;
-      margin-right: 0.5rem;
+      margin-right: 0.1rem;
     }
 
     span {
@@ -124,5 +195,15 @@
       margin-bottom: 1rem;
       color: $white;
     }
+  }
+
+  pre {
+    font-size: 1rem;
+    font-weight: 400;
+    margin-bottom: 1rem;
+    background-color: #444;
+    padding: 1rem;
+    border-radius: 8px;
+    overflow-x: scroll;
   }
 }
