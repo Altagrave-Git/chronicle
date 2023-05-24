@@ -40,7 +40,7 @@ class ProjectSection(models.Model):
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=100)
-    description = models.TextField(max_length=1000)
+    description = models.TextField(max_length=1000, null=True, blank=True)
     type = models.CharField(max_length=100, choices=SECTION_TYPES, default='text')
     order = models.IntegerField(blank=True, null=True)
 
@@ -48,7 +48,7 @@ class ProjectSection(models.Model):
         return self.project.name + ' - ' + self.title
     
     class Meta:
-        ordering = ['project']
+        ordering = ['project', 'order']
 
 
 class ProjectImage(models.Model):
@@ -102,7 +102,7 @@ class AppSection(models.Model):
         
     app = models.ForeignKey(App, on_delete=models.CASCADE, related_name='sections')
     title = models.CharField(max_length=100)
-    description = models.TextField(max_length=1000)
+    description = models.TextField(max_length=1000, null=True, blank=True)
     type = models.CharField(max_length=100, choices=SECTION_TYPES, default='other')
     order = models.IntegerField(blank=True, null=True)
 
@@ -110,7 +110,7 @@ class AppSection(models.Model):
         return self.app.project.name + ': ' + self.app.name + ' - ' + self.description[:50]
     
     class Meta:
-        ordering = ['app']
+        ordering = ['app', 'order']
 
 
 class AppImage(models.Model):
@@ -155,26 +155,27 @@ class Snippet(models.Model):
     style = models.CharField(choices=STYLE_CHOICES, default='monokai', max_length=100)
 
     class Meta:
-        ordering = ['project', 'app', 'project_section', 'app_section', 'title']
+        ordering = ['project', 'app', 'project_section', 'app_section']
         
     def __str__(self):
         if self.project:
-            if self.project_section:
-                return f'{self.project} - {self.project_section} - {self.title}'
             return f'{self.project} - {self.title}'
         
-        if self.app:
-            if self.app_section:
-                return f'{self.app} - {self.app_section} - {self.title}'
+        elif self.project_section:
+            return f'{self.project_section} - {self.title}'
+        
+        elif self.app:
             return f'{self.app} - {self.title}'
         
+        elif self.app_section:
+            return f'{self.app_section} - {self.title}'
+        
         return self.title
-    
+
     def save(self, *args, **kwargs):
         lexer = get_lexer_by_name(self.language)
         formatter = HtmlFormatter(style=self.style, full=False, noclasses=True)
-        self.highlighted = highlight(self.code, lexer, formatter)
-        
+        self.highlighted = highlight(self.code, lexer, formatter)   
         super().save(*args, **kwargs)
 
 
