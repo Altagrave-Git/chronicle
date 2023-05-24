@@ -8,6 +8,7 @@ const PortfolioView = () => {
   const [projectDetail, setProjectDetail] = useState({});
   const [activeIndex, setActiveIndex] = useState(0);
 
+  // Retrieve project data from Chronicle API
   useEffect(() => {
     fetch(import.meta.env.VITE_CHRONICLE_URL + '/projects/')
       .then(response => response.json())
@@ -23,6 +24,7 @@ const PortfolioView = () => {
     } else {
       setActiveIndex(activeIndex - 1);
     }
+    window.scrollTo(0, 0);
   }
 
   // Rotate active index state forwards
@@ -34,6 +36,20 @@ const PortfolioView = () => {
       setActiveIndex(activeIndex + 1);
       setProjectDetail(portfolioData[activeIndex + 1]);
     }
+    window.scrollTo(0, 0);
+  }
+
+  // Set project detail (aside) to active
+  const handleActive = () => {
+    if (document.querySelector('section.active')) {
+      document.querySelector('section.portfolio').classList.remove('active');
+      document.querySelector('aside.portfolio').classList.add('active');
+    } else if (document.querySelector('aside.active')) {
+      document.querySelector('aside.portfolio').classList.remove('active');
+      document.querySelector('section.portfolio').classList.add('active');
+    }
+    // scroll to top of page
+    window.scrollTo(0, 0);
   }
 
   useEffect(() => {
@@ -65,7 +81,7 @@ const PortfolioView = () => {
           {portfolioData &&
             portfolioData.map((project, index) => {
               if (index === activeIndex) {
-                return <ProjectCard key={index} project={project} click={setProjectDetail} ordering="active-card" />
+                return <ProjectCard key={index} project={project} click={setProjectDetail} handleActive={handleActive} ordering="active-card" />
               } else if (index === activeIndex - 1 || (activeIndex === 0 && index === portfolioData.length - 1)) {
                 return <ProjectCard key={index} project={project} click={handlePrev} ordering="prev-card" />
               } else if (index === activeIndex + 1 || (activeIndex === portfolioData.length - 1 && index === 0)) {
@@ -79,7 +95,7 @@ const PortfolioView = () => {
       </section>
       <section className="portfolio placeholder"></section>
       <aside className="portfolio">
-          <ProjectDetail project={projectDetail} />
+          <ProjectDetail project={projectDetail} handleActive={handleActive} />
       </aside>
     </main>
   )
