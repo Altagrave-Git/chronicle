@@ -1,11 +1,14 @@
 import './projectcard.scss'
 
-const ProjectCard = ({ project, ordering, click }) => {
+const ProjectCard = ({ project, ordering, click, handleActive=null }) => {
   const { name, category, description, site, repo, images, apps } = project;
   const baseUrl = 'http://127.0.0.1:8000';
 
   return (
-    <div onClick={() => click(project)} className={'project-card' + ' ' + ordering}>
+    <div onClick={ordering === 'active-card' ? () => {
+      click(project);
+      handleActive();
+    } : () => click(project)} className={'project-card' + ' ' + ordering}>
       <div className="project-card__image">
         <img src={baseUrl + images[0].image} alt={images[0].project} />
       </div>
