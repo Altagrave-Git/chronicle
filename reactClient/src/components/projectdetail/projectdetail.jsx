@@ -3,24 +3,34 @@ import { ReactComponent as GithubLogo } from "../../icons/github.svg";
 import { ReactComponent as SiteLogo } from "../../icons/website.svg";
 import TechIcon from '../techicon/techicon';
 
-const ProjectDetail = ({ project }) => {
+const ProjectDetail = ({ project, handleActive }) => {
 
   return (
   <>
     { project &&
       <div className="project-detail">
+        <div className="btn-back" onClick={() => handleActive()}>
+          <svg viewBox="6 5 10 15" fill="none"><g strokeWidth="0"></g><g strokeLinecap="round" strokeLinejoin="round"></g><g> <path d="M8 12L16 12" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path> <path d="M11 9L8.08704 11.913V11.913C8.03897 11.961 8.03897 12.039 8.08704 12.087V12.087L11 15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"></path> </g></svg>
+          <div>Back</div>
+        </div>
         <div className="project-detail__header">
           <div>
             <h2 className="project-detail__title">{project.name}</h2>
             <h3 className="project-detail__category">{project.category}</h3>
           </div>
           <div className="project-detail__links">
-            <a href={project.site} className="project-detail__link">
+            { project.site &&
+            <a href={project.site} className="project-detail__link website">
               <SiteLogo />
+              Website
             </a>
-            <a href={project.repo} className="project-detail__link">
+            }
+            { project.repo &&
+            <a href={project.repo} className="project-detail__link github">
               <GithubLogo />
+              Github
             </a>
+            }
           </div>
         </div>
         <div className="project-detail__body">
@@ -57,6 +67,11 @@ const ProjectDetail = ({ project }) => {
                           return <li key={index}>{item}</li>
                         })}
                       </ul>
+                    }
+                    {section.snippets &&
+                      section.snippets.map((snippet, index) => {
+                        return <div key={index} dangerouslySetInnerHTML={{__html: snippet.highlighted}} />
+                      })
                     }
                   </div>
                 )
