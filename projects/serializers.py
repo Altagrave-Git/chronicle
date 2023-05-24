@@ -56,6 +56,11 @@ class ProjectSectionSerializer(serializers.Serializer):
     images = serializers.SerializerMethodField(allow_null=True)
     type = serializers.ChoiceField(choices=ProjectSection.SECTION_TYPES)
     order = serializers.IntegerField(default=0, allow_null=True)
+    snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
+
+    def get_snippets(self, obj):
+        snippets = SnippetSerializer(obj.snippets.all(), many=True).data
+        return snippets
 
     def get_images(self, obj):
         images = ProjectImageSerializer(obj.images.all(), many=True).data
@@ -105,6 +110,11 @@ class AppSerializer(serializers.Serializer):
     project = serializers.CharField(max_length=100)
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
+    snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
+
+    def get_snippets(self, obj):
+        snippets = SnippetSerializer(obj.snippets.all(), many=True).data
+        return snippets
 
     def get_sections(self, obj):
         sections = AppSectionSerializer(obj.sections.all(), many=True).data
@@ -137,6 +147,11 @@ class AppSectionSerializer(serializers.Serializer):
     images = serializers.SerializerMethodField(allow_null=True)
     type = serializers.ChoiceField(choices=AppSection.SECTION_TYPES)
     order = serializers.IntegerField(default=0, allow_null=True)
+    snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
+
+    def get_snippets(self, obj):
+        snippets = SnippetSerializer(obj.snippets.all(), many=True).data
+        return snippets
 
     def get_images(self, obj):
         images = AppImageSerializer(obj.images.all(), many=True).data
