@@ -28,9 +28,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('django.contrib.auth.urls')),
-    path('', views.index),
-    path('api/', views.chronicle),
-    path('api/projects/', include('projects.urls')),
+    path('', views.index, name='index'),
+    path('projects/', include('projects.urls')),
     path('u/', include('users.urls')),
 ]
 
