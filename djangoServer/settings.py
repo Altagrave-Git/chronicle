@@ -6,11 +6,11 @@ load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS'), os.environ.get('ALLOWED_HOSTS2', 'localhost')]
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -38,12 +38,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'djangoServer.urls'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5173',
-    'http://10.0.0.219:5173'
-]
+CORS_ORIGIN_ALLOW_ALL = True
+
+# CORS_ALLOWED_ORIGINS = [
+#     'http://localhost:3000',
+#     'http://127.0.0.1:3000',
+#     'http://localhost:5173',
+#     'http://10.0.0.219:5173'
+# ]
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -51,7 +53,7 @@ CORS_ALLOW_CREDENTIALS = True
 # TEMPLATES = [
 #     {
 #         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#         'DIRS': [os.path.join(BASE_DIR, 'reactClient/dist/')],
+#         'DIRS': [os.path.join(BASE_DIR, 'chronicle-client/dist/')],
 #         'APP_DIRS': True,
 #         'OPTIONS': {
 #             'context_processors': [
@@ -104,6 +106,10 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+CLIENT_ID = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+REDIRECT_URI = os.environ.get("REDIRECT_URI")
+
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
         'rest_framework.renderers.JSONRenderer',
@@ -113,8 +119,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        # rest_framework.authentication.SessionAuthentication',
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ]
 }
 
@@ -131,7 +136,7 @@ STATIC_URL = '/static/'
 # STATIC_URL = '/assets/'
 
 # if DEBUG:
-#     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'reactClient/dist/assets')]
+#     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'chronicle-client/dist/assets')]
 # else:
 #     STATIC_ROOT = '/assets/'
 
@@ -140,7 +145,7 @@ MEDIA_URL = '/media/'
 if DEBUG:
     MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 else:
-    MEDIA_ROOT = '/media/'
+    MEDIA_ROOT = os.environ.get('MEDIA_ROOT')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
