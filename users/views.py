@@ -31,13 +31,16 @@ auth_url = "https://echonetwork.app/o/authorize/?response_type=code&code_challen
 def auth_view(request):
     if request.method == "GET":
         # set the code verifier in the session for later use
-        request.session["code_verifier"] = CODE_VERIFIER.decode('utf-8')
+        verifier = jwt.encode(CODE_VERIFIER, CLIENT_SECRET, algorithm="HS256")
+        request.session["code_verifier"] = verifier
         return Response({"auth_url": auth_url}, status=status.HTTP_200_OK)
     
     elif request.method == "POST":
         # retrieve the authorization code from the request and the code verifier from the session
         code = request.data.get("code")
         verifier = request.session.get("code_verifier")
+        verifier = jwt.decode(verifier, CLIENT_SECRET, algorithms=["HS256"])
+        request.session["code_verifier"] = None
 
         if code and verifier:
             # use the authorization code to retrieve an id token and access token from Echo Network
