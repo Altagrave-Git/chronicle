@@ -4,7 +4,7 @@ from django.contrib.sessions.models import Session
 
 
 @api_view(['GET'])
-def chronicle(request):
+def index(request):
     data = [
         'Hello, welcome to chronicle API',
         {
