@@ -15,6 +15,7 @@ ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'corsheaders',
+    'oauth2_provider',
     'rest_framework',
     'users.apps.UsersConfig',
     'projects.apps.ProjectsConfig',
@@ -129,8 +130,17 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
-    ]
+        'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/hour',
+        'user': '500/hour'
+    }
+}
+
+OAUTH2_PROVIDER = {
+    'RESOURCE_SERVER_INTROSPECTION_URL': 'https://echonetwork.app/o/introspect/',
+    'RESOURCE_SERVER_INTROSPECTION_CREDENTIALS': (CLIENT_ID, CLIENT_SECRET)
 }
 
 LANGUAGE_CODE = 'en-us'
