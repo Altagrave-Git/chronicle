@@ -4,11 +4,13 @@ from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppI
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework import permissions
 from rest_framework import status
+from users.models import User
 
 
 # CRUD for projects, apps, and project images
 @api_view(['GET', 'POST'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([permissions.AllowAny])
+@authentication_classes([])
 def projects(request):
     # GET all projects
     if request.method == 'GET':
@@ -20,7 +22,11 @@ def projects(request):
     
     # POST a new project
     elif request.method == 'POST':
-        if request.user.is_staff:
+        session = request.session.get("active_session")
+        if session:
+            user = User.objects.filter(active_session=session)[0]
+        if user.is_superuser:
+            print(request.POST)
             serializer = ProjectSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -31,6 +37,7 @@ def projects(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def project(request, project_id):
     try:
         project = Project.objects.get(id=project_id)
@@ -64,6 +71,7 @@ def project(request, project_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def project_sections(request, project_id):
     # GET all project sections
     if request.method == 'GET':
@@ -85,6 +93,7 @@ def project_sections(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def project_section(request, project_id, section_id):
     try:
         section = ProjectSection.objects.get(id=section_id)
@@ -116,6 +125,7 @@ def project_section(request, project_id, section_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def project_images(request, project_id):
     # GET all project images
     if request.method == 'GET':
@@ -137,6 +147,7 @@ def project_images(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def project_image(request, project_id, image_id):
     try:
         project_image = ProjectImage.objects.get(id=image_id)
@@ -168,6 +179,7 @@ def project_image(request, project_id, image_id):
     
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def apps(request, project_id):
     # GET all apps
     if request.method == 'GET':
@@ -189,6 +201,7 @@ def apps(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def app(request, project_id, app_id):
     try:
         app = App.objects.get(id=app_id)
@@ -220,6 +233,7 @@ def app(request, project_id, app_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def app_images(request, project_id, app_id):
     # GET all app images
     if request.method == 'GET':
@@ -241,6 +255,7 @@ def app_images(request, project_id, app_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def app_image(request, project_id, app_id, image_id):
     try:
         app_image = AppImage.objects.get(id=image_id)
@@ -272,6 +287,7 @@ def app_image(request, project_id, app_id, image_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def app_sections(request, project_id, app_id):
     # GET all app sections
     if request.method == 'GET':
@@ -293,6 +309,7 @@ def app_sections(request, project_id, app_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def app_section(request, project_id, app_id, section_id):
     try:
         app_section = AppSection.objects.get(id=section_id)
@@ -324,6 +341,7 @@ def app_section(request, project_id, app_id, section_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def snippets(request, project_id):
     # GET all snippets
     if request.method == 'GET':
@@ -345,6 +363,7 @@ def snippets(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@authentication_classes([])
 def snippet(request, project_id, snippet_id):
     try:
         snippet = Snippet.objects.get(id=snippet_id)
