@@ -4,10 +4,10 @@ from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppI
 class ProjectSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100)
     category = serializers.CharField(max_length=100)
-    description = serializers.CharField(max_length=1000)
+    description = serializers.CharField(max_length=1000, allow_null=True)
     tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
-    site = serializers.URLField()
-    repo = serializers.URLField()
+    site = serializers.URLField(allow_null=True)
+    repo = serializers.URLField(allow_null=True)
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     apps = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
@@ -86,6 +86,7 @@ class ProjectSectionSerializer(serializers.Serializer):
 class ProjectImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
     project = serializers.CharField(max_length=100)
+    section = serializers.CharField(max_length=100, allow_null=True)
     type = serializers.ChoiceField(choices=ProjectImage.TYPES)
 
     def create(self, validated_data):
