@@ -1,9 +1,9 @@
 from .serializers import UserSerializer
 from django.contrib.auth import login, logout
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, throttling
 from users.models import User
-from rest_framework.decorators import permission_classes, api_view, renderer_classes, authentication_classes
+from rest_framework.decorators import permission_classes, api_view, authentication_classes, throttle_classes
 import requests
 import random
 import string
@@ -14,6 +14,7 @@ import requests
 import jwt
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
+from oauth2_provider.models import AccessToken
 
 CLIENT_ID = settings.CLIENT_ID
 CLIENT_SECRET = settings.CLIENT_SECRET
@@ -31,6 +32,7 @@ auth_url = "https://echonetwork.app/o/authorize/?response_type=code&code_challen
 @permission_classes([permissions.AllowAny])
 @api_view(["GET", "POST"])
 @authentication_classes([])
+@throttle_classes([throttling.AnonRateThrottle, throttling.UserRateThrottle])
 def auth_view(request):
     if request.method == "GET":
         # set the code verifier in the session for later use
@@ -106,7 +108,7 @@ def auth_view(request):
             email = decrypted_id_token.get("email")
             avatar = decrypted_id_token.get("picture")
 
-            # use the id token to create a temporary password for the user
+            # Hash the id token to generate a single-use id for the user
             active_session = hashlib.sha256(id_token.encode('utf-8')).hexdigest()
 
             # create or retrieve the user
@@ -118,6 +120,7 @@ def auth_view(request):
                 user.avatar = avatar
                 user.access_token = access_token
                 user.refresh_token = refresh_token
+                user.id_token = id_token
                 user.token_type = token_type
                 user.expires_in = expires_in
                 user.scope = scope
@@ -133,6 +136,7 @@ def auth_view(request):
                     avatar=avatar,
                     access_token=access_token,
                     refresh_token=refresh_token,
+                    id_token=id_token,
                     token_type=token_type,
                     expires_in=expires_in,
                     scope=scope,
@@ -141,9 +145,9 @@ def auth_view(request):
                 user.save()
 
             # login the user
-            login(request, user)
+            # login(request, user)
 
-            # set hashed id token in the session for later use
+            # set token hash in the session for later use
             request.session["active_session"] = active_session
 
             # return the user data
@@ -161,22 +165,20 @@ def auth_view(request):
 
 @permission_classes([permissions.AllowAny])
 @api_view(["GET"])
+@authentication_classes([])
 def check_session(request):
     if request.method == "GET":
-        # retrieve the active session token from the session
+        # retrieve the active session variable from the session
         active_session = request.session.get("active_session")
 
         if active_session:
-            # retrieve the user from the active session token
+            # retrieve the user from the active session variable
             user = User.objects.get(active_session=active_session)
 
             # check if the session is still valid
             if user.expires_at < timezone.now():
                 del request.session["active_session"]
-                return Response(data="Session expired", status=status.HTTP_400_BAD_REQUEST)
-
-            # login the user
-            login(request, user)
+                return Response(data="Token expired", status=status.HTTP_200_OK)
 
             # return the user data
             serializer = UserSerializer(user)
@@ -184,34 +186,55 @@ def check_session(request):
 
             return Response(data=data, status=status.HTTP_200_OK)
         else:
-            return Response(data="No active session", status=status.HTTP_400_BAD_REQUEST)
+            return Response(data="No active session", status=status.HTTP_200_OK)
     else:
         return Response(data="Invalid request", status=status.HTTP_400_BAD_REQUEST)
-    
 
 @permission_classes([permissions.AllowAny])
-@api_view(["GET"])
+@api_view(["POST"])
 def logout_view(request):
-    if request.method == "GET":
-        # retrieve data from the session
-        active_session = request.session.get("active_session")
+    token = request.data.get('token')
 
-        if active_session:
-            # retrieve the user from the active session
-            user = User.objects.get(active_session=active_session)
+    if token:
+        user = User.objects.get(access_token=token)
+        refresh = user.refresh_token
+        oidc = user.id_token
 
-            # logout the user
-            logout(request)
+        headers = {
+            "Cache-Control": "no-cache",
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
 
-            # delete the active session
-            user.active_session = None
-            user.save()
+        data = {
+            "token": token,
+            "client_id": CLIENT_ID,
+            "client_secret": CLIENT_SECRET,
+        }
 
-            # delete the active session from the session
-            del request.session["active_session"]
+        url = "https://echonetwork.app/o/revoke_token/"
 
-            return Response(data="Logged out", status=status.HTTP_200_OK)
-        else:
-            return Response(data="No active session", status=status.HTTP_400_BAD_REQUEST)
-    else:
-        return Response(data="Invalid request", status=status.HTTP_400_BAD_REQUEST)
+        revoke_request = requests.post(url, headers=headers, data=data)
+
+        if refresh:
+            data["token"] = refresh
+            requests.post(url, headers=headers, data=data)
+
+        if oidc:
+            data["token"] = oidc
+            requests.post(url, headers=headers, data=data)
+
+        if AccessToken.objects.filter(token=token).exists:
+            AccessToken.objects.filter(token=token).delete()
+
+        request.session["active_session"] = None
+
+        data = {
+            'message': 'Logged out'
+        }
+
+        if not revoke_request.status_code == 200:
+            data["message"] = 'Echo Network may have experienced an error. Logged out of Chronicle.'
+
+        return Response(data, status=status.HTTP_200_OK)
+    
+    else: Response(status=status.HTTP_400_BAD_REQUEST)
