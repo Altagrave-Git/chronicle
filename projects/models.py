@@ -17,7 +17,7 @@ class Technology(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=100)
-    description = models.TextField(max_length=1000)
+    description = models.TextField(max_length=1000, null=True, blank=True)
     tech = models.ManyToManyField(Technology, related_name='projects')
     site = models.URLField(blank=True, null=True)
     repo = models.URLField(blank=True, null=True)
@@ -118,6 +118,7 @@ class AppImage(models.Model):
         return f'projects/{instance.project.name}/{instance.app.name}/{filename}'
     
     TYPES = (
+        ('card', 'Card'),
         ('mobile-display', 'Mobile Display'),
         ('desktop-display', 'Desktop Display'),
         ('mobile-screenshot', 'Mobile Screenshot'),
