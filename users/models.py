@@ -8,6 +8,7 @@ from datetime import timedelta
 class User(AbstractUser):
     access_token = models.CharField(max_length=255)
     refresh_token = models.CharField(max_length=255, blank=True, null=True)
+    id_token = models.CharField(max_length=2000, blank=True, null=True)
     token_type = models.CharField(max_length=255)
     expires_in = models.IntegerField(default=0)
     expires_at = models.DateTimeField(blank=True, null=True)
@@ -20,7 +21,6 @@ class User(AbstractUser):
     email = models.EmailField(blank=True, null=True)
 
     active_session = models.CharField(max_length=255, blank=True, null=True)
-    password = None
 
     def __str__(self):
         return self.username
