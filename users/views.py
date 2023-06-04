@@ -145,7 +145,7 @@ def auth_view(request):
                 user.save()
 
             # login the user
-            # login(request, user)
+            login(request, user)
 
             # set token hash in the session for later use
             request.session["active_session"] = active_session
@@ -180,7 +180,9 @@ def check_session(request):
                 del request.session["active_session"]
                 return Response(data="Token expired", status=status.HTTP_200_OK)
 
-            # return the user data
+            login(request, user)
+
+            # return user data
             serializer = UserSerializer(user)
             data = serializer.data
 
@@ -238,3 +240,20 @@ def logout_view(request):
         return Response(data, status=status.HTTP_200_OK)
     
     else: Response(status=status.HTTP_400_BAD_REQUEST)
+
+@permission_classes([permissions.AllowAny])
+@api_view(["POST"])
+def intro(request):
+    print(request.user)
+    if request.user.is_authenticated:
+        data = {
+            'user': request.user.username
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+    else:
+        data = {
+            'msg': 'NOPE!'
+        }
+
+        return Response()
