@@ -1,17 +1,19 @@
 from rest_framework.response import Response
-from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, AppSerializer, AppSectionSerializer, AppImageSerializer, SnippetSerializer
-from .models import Project, ProjectSection, ProjectImage, App, AppSection, AppImage, Snippet
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
+from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, SnippetSerializer
+from .models import Project, ProjectSection, ProjectImage, Snippet
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes
 from rest_framework import permissions
 from rest_framework import status
 from users.models import User
+from rest_framework import parsers
 
 
-# CRUD for projects, apps, and project images
+# CRUD for projects and project images
 @api_view(['GET', 'POST'])
-@permission_classes([permissions.AllowAny])
-@authentication_classes([])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@parser_classes([parsers.MultiPartParser, parsers.JSONParser, parsers.FormParser])
 def projects(request):
+
     # GET all projects
     if request.method == 'GET':
         projects = Project.objects.all()
@@ -22,11 +24,9 @@ def projects(request):
     
     # POST a new project
     elif request.method == 'POST':
-        session = request.session.get("active_session")
-        if session:
-            user = User.objects.filter(active_session=session)[0]
-        if user.is_superuser:
-            print(request.POST)
+        print(request.FILES)
+        if request.user.is_superuser:
+            print(request.data)
             serializer = ProjectSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -63,7 +63,6 @@ def project(request, project_id):
     elif request.method == 'DELETE':
         if request.user.is_staff:
             project.images.all().delete()
-            project.apps.all().delete()
             project.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -125,11 +124,13 @@ def project_section(request, project_id, section_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@parser_classes([parsers.FormParser, parsers.MultiPartParser])
 def project_images(request, project_id):
+    try: project = Project.objects.get(id=project_id)
+    except: Response({"exception":"object does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
     # GET all project images
     if request.method == 'GET':
-        project = Project.objects.get(id=project_id)
         project_images = project.images.all()
         serializer = ProjectImageSerializer(project_images, many=True)
         return Response(serializer.data)
@@ -140,6 +141,7 @@ def project_images(request, project_id):
             serializer = ProjectImageSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
+                
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
@@ -173,168 +175,6 @@ def project_image(request, project_id, image_id):
     elif request.method == 'DELETE':
         if request.user.is_staff:
             project_image.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-    
-@api_view(['GET', 'POST'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def apps(request, project_id):
-    # GET all apps
-    if request.method == 'GET':
-        project = Project.objects.get(id=project_id)
-        apps = project.apps.all()
-        serializer = AppSerializer(apps, many=True)
-        return Response(serializer.data)
-    
-    # POST a new app
-    elif request.method == 'POST':
-        if request.user.is_staff:
-            serializer = AppSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def app(request, project_id, app_id):
-    try:
-        app = App.objects.get(id=app_id)
-    except App.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    # GET an app
-    if request.method == 'GET':
-        serializer = AppSerializer(app)
-        return Response(serializer.data)
-    
-    # PUT an app
-    elif request.method == 'PUT':
-        if request.user.is_staff:
-            serializer = AppSerializer(app, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    # DELETE an app
-    elif request.method == 'DELETE':
-        if request.user.is_staff:
-            app.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-
-@api_view(['GET', 'POST'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def app_images(request, project_id, app_id):
-    # GET all app images
-    if request.method == 'GET':
-        app = App.objects.get(id=app_id)
-        app_images = app.images.all()
-        serializer = AppImageSerializer(app_images, many=True)
-        return Response(serializer.data)
-    
-    # POST a new app image
-    elif request.method == 'POST':
-        if request.user.is_staff:
-            serializer = AppImageSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def app_image(request, project_id, app_id, image_id):
-    try:
-        app_image = AppImage.objects.get(id=image_id)
-    except AppImage.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    # GET an app image
-    if request.method == 'GET':
-        serializer = AppImageSerializer(app_image)
-        return Response(serializer.data)
-    
-    # PUT an app image
-    elif request.method == 'PUT':
-        if request.user.is_staff:
-            serializer = AppImageSerializer(app_image, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    # DELETE an app image
-    elif request.method == 'DELETE':
-        if request.user.is_staff:
-            app_image.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-
-@api_view(['GET', 'POST'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def app_sections(request, project_id, app_id):
-    # GET all app sections
-    if request.method == 'GET':
-        app = App.objects.get(id=app_id)
-        app_sections = app.sections.all()
-        serializer = AppSectionSerializer(app_sections, many=True)
-        return Response(serializer.data)
-    
-    # POST a new app section
-    elif request.method == 'POST':
-        if request.user.is_staff:
-            serializer = AppSectionSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-
-@api_view(['GET', 'PUT', 'DELETE'])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
-def app_section(request, project_id, app_id, section_id):
-    try:
-        app_section = AppSection.objects.get(id=section_id)
-    except AppSection.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    # GET an app section
-    if request.method == 'GET':
-        serializer = AppSectionSerializer(app_section)
-        return Response(serializer.data)
-    
-    # PUT an app section
-    elif request.method == 'PUT':
-        if request.user.is_staff:
-            serializer = AppSectionSerializer(app_section, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
-    
-    # DELETE an app section
-    elif request.method == 'DELETE':
-        if request.user.is_staff:
-            app_section.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
