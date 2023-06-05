@@ -44,12 +44,16 @@ class Technology(models.Model):
 
 
 class Project(models.Model):
+    def get_image_path(instance, filename):
+        return f'projects/{instance.name}/thumbnail/{filename}'
+    
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=100)
     description = models.TextField(max_length=1000, null=True, blank=True)
     tech = models.ManyToManyField(Technology, related_name='projects')
     site = models.URLField(blank=True, null=True)
     repo = models.URLField(blank=True, null=True)
+    image = models.ImageField(upload_to=get_image_path, default='projects/default.png')
     order = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
@@ -85,11 +89,8 @@ class ProjectImage(models.Model):
         return f'projects/{instance.project.name}/{filename}'
     
     TYPES = (
-        ('thumbnail', 'Thumbnail'),
-        ('mobile-display', 'Mobile Display'),
         ('desktop-display', 'Desktop Display'),
-        ('mobile-screenshot', 'Mobile Screenshot'),
-        ('desktop-screenshot', 'Desktop Screenshot'),
+        ('mobile-display', 'Mobile Display'),
         ('logo', 'Logo'),
         ('other', 'Other')
     )
