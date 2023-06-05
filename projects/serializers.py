@@ -6,10 +6,11 @@ class ProjectSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=100)
     category = serializers.CharField(max_length=100)
+    image = serializers.ImageField(allow_null=True)
     description = serializers.CharField(max_length=1000, allow_null=True, allow_blank=True)
-    tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
     site = serializers.URLField(allow_null=True, allow_blank=True)
     repo = serializers.URLField(allow_null=True, allow_blank=True)
+    tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
     snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
@@ -39,6 +40,7 @@ class ProjectSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.site = validated_data.get('site', instance.site)
         instance.repo = validated_data.get('repo', instance.repo)
+        instance.image = validated_data.get('image', instance.image)
         instance.save()
         return instance
     
