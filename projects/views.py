@@ -11,7 +11,7 @@ from rest_framework import parsers
 # CRUD for projects and project images
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@parser_classes([parsers.MultiPartParser, parsers.JSONParser, parsers.FormParser])
+@parser_classes([parsers.MultiPartParser, parsers.FormParser])
 def projects(request):
 
     # GET all projects
@@ -24,14 +24,13 @@ def projects(request):
     
     # POST a new project
     elif request.method == 'POST':
-        print(request.FILES)
         if request.user.is_superuser:
             print(request.data)
             serializer = ProjectSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors)
+            return Response({"message", "serialized data not valid"}, serializer.errors)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
 
