@@ -1,13 +1,14 @@
 from django.urls import path
-from .views import projects, project, project_sections, project_section, project_images, project_image, snippets, snippet
+from . import views
 
 urlpatterns = [
-    path('', projects, name='projects'),
-    path('<int:project_id>/', project, name='project'),
-    path('<int:project_id>/sections/', project_sections, name='project_sections'),
-    path('<int:project_id>/sections/<int:section_id>/', project_section, name='project_section'),
-    path('<int:project_id>/images/', project_images, name='project_images'),
-    path('<int:project_id>/images/<int:image_id>/', project_image, name='project_image'),
-    path('<int:project_id>/code/', snippets, name='snippets'),
-    path('<int:project_id>/code/<int:snippet_id>/', snippet, name='snippet'),
+    path('', views.projects, name='projects'),
+    path('<int:project_id>/', views.project, name='project'),
+    path('<int:project_id>/sections/', views.project_sections, name='project_sections'),
+    path('<int:project_id>/sections/<int:section_id>/', views.project_section, name='project_section'),
+    path('<int:project_id>/images/', views.project_images, name='project_images'),
+    path('<int:project_id>/images/<int:image_id>/', views.project_image, name='project_image'),
+    path('<int:project_id>/code/', views.snippets, name='snippets'),
+    path('<int:project_id>/code/<int:snippet_id>/', views.snippet, name='snippet'),
+    path('<int:project_id>/tech/', views.tech_view, name='tech')
 ]
