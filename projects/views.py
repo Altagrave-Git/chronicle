@@ -1,11 +1,12 @@
 from rest_framework.response import Response
-from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, SnippetSerializer
-from .models import Project, ProjectSection, ProjectImage, Snippet
-from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes
+from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, SnippetSerializer, TechnologySerializer
+from .models import Project, ProjectSection, ProjectImage, Snippet, Technology
+from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes, renderer_classes
 from rest_framework import permissions
 from rest_framework import status
 from users.models import User
 from rest_framework import parsers
+from rest_framework import renderers
 
 
 # CRUD for projects and project images
@@ -79,14 +80,12 @@ def project_sections(request, project_id):
         return Response(serializer.data)
     
     # POST a new project section
-    elif request.method == 'POST':
-        if request.user.is_staff:
-            serializer = ProjectSectionSerializer(data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors)
-        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    elif request.method == 'POST' and request.user.is_superuser:
+        serializer = ProjectSectionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors)
     
 
 @api_view(['GET', 'PUT', 'DELETE'])
@@ -230,3 +229,34 @@ def snippet(request, project_id, snippet_id):
             snippet.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
+    
+
+@api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@renderer_classes([renderers.JSONRenderer, renderers.HTMLFormRenderer, renderers.MultiPartRenderer])
+def tech_view(request, project_id):
+    # GET a projects technologies
+    if request.method == 'GET':
+        used = Technology.objects.filter(projects=project_id)
+        used = TechnologySerializer(used, many=True)
+
+        unused = Technology.objects.exclude(projects=project_id)
+        unused = TechnologySerializer(unused, many=True)
+
+        data ={ "used": used.data, "unused": unused.data }
+
+        return Response(data, status=status.HTTP_200_OK)
+
+    # POST technologies to a project
+    if request.method == 'POST' and request.user.is_superuser:
+        tech = request.data.get('tech')
+        project = Project.objects.get(id=project_id)
+        for item in tech:
+            if not Technology.objects.filter(tech=item).exists():
+                new_tech = Technology(tech=item)
+                new_tech.save()
+
+        tech = Technology.objects.filter(tech__in=tech)
+        project.tech.set(tech)
+        data = TechnologySerializer(tech, many=True).data
+        return Response(data, status=status.HTTP_200_OK)
