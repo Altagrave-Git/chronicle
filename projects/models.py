@@ -4,37 +4,9 @@ from pygments.styles import get_all_styles
 from pygments.formatters.html import HtmlFormatter
 from pygments import highlight
 
-# class Meta:
-#     unique_together = ['id', 'order']
-#     ordering = ['order']
 
 class Technology(models.Model):
-    TECH_CHOICES = [
-        ('anaconda', 'Anaconda'),
-        ('auth0', 'Auth0'),
-        ('bash', 'Bash'),
-        ('bootstrap', 'Bootstrap'),
-        ('css', 'CSS'),
-        ('django', 'Django'),
-        ('git', 'Git'),
-        ('github', 'Github'),
-        ('gunicorn', 'Gunicorn'),
-        ('html', 'HTML'),
-        ('javascript', 'Javascript'),
-        ('jquery', 'jQuery'),
-        ('linux', 'Linux'),
-        ('nginx', 'NGINX'),
-        ('postgresql', 'PostgreSQL'),
-        ('python', 'Python'),
-        ('react', 'React'),
-        ('restapi', 'Rest API'),
-        ('restframework', 'Django Rest Framework'),
-        ('sass', 'SASS'),
-        ('sqlite', 'SQLite'),
-        ('ubuntu', 'Ubuntu'),
-    ]
-
-    tech = models.CharField(choices=TECH_CHOICES, default='python', max_length=50)
+    tech = models.CharField(max_length=100)
 
     def __str__(self):
         return self.tech
