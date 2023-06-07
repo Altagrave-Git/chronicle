@@ -133,7 +133,7 @@ class SnippetSerializer(serializers.Serializer):
 
 
 class TechnologySerializer(serializers.Serializer):
-    tech = serializers.ChoiceField(choices=Technology.TECH_CHOICES, default='python')
+    tech = serializers.CharField(max_length=100)
 
     def get_projects(self, obj):
         projects = ProjectSerializer(obj.projects.all(), many=True).data
