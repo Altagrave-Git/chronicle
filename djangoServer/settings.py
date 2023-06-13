@@ -10,8 +10,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = os.environ.get('DEBUG', False)
 
-# ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS'), os.environ.get('ALLOWED_HOSTS2', 'localhost')]
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [os.environ.get('ALLOWED_HOSTS'), os.environ.get('ALLOWED_HOSTS2', 'localhost')]
 
 INSTALLED_APPS = [
     'corsheaders',
@@ -40,42 +39,33 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'djangoServer.urls'
 
-CORS_ALLOWED_ORIGINS = [
-    'http://127.0.0.1:3000',
-    'http://localhost:3000',
-    'https://echonetwork.app',
-    'https://www.echonetwork.app',
-]
+if DEBUG:
+    CORS_ALLOWED_ORIGINS = [
+        'http://127.0.0.1:3000',
+        'http://localhost:3000',
+        'https://echonetwork.app',
+        'https://www.echonetwork.app',
+    ]
+
+else:
+    CORS_ALLOWED_ORIGINS = [
+        'https://turcotte.tech',
+        'https://www.turcotte.tech',
+        'https://echonetwork.app',
+        'https://www.echonetwork.app',
+    ]
 
 CORS_ALLOW_CREDENTIALS = True
 
 CSRF_COOKIE_NAME = "csrftoken"
 
-# set csrf and session cookies to none and secure to false for development
 if DEBUG:
-    CSRF_COOKIE_SECURE = False
-    SESSION_COOKIE_SECURE = False
-    CSRF_COOKIE_HTTPONLY = False
-    SESSION_COOKIE_HTTPONLY = False
+    CSRF_COOKIE_SECURE = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_HTTPONLY = True
     SESSION_COOKIE_SAMESITE = None
     CSRF_COOKIE_SAMESITE = None
-
-
-# TEMPLATES = [
-#     {
-#         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-#         'DIRS': [os.path.join(BASE_DIR, 'chronicle-client/dist/')],
-#         'APP_DIRS': True,
-#         'OPTIONS': {
-#             'context_processors': [
-#                 'django.template.context_processors.debug',
-#                 'django.template.context_processors.request',
-#                 'django.contrib.auth.context_processors.auth',
-#                 'django.contrib.messages.context_processors.messages',
-#             ],
-#         },
-#     },
-# ]
 
 TEMPLATES = [
     {
@@ -133,8 +123,8 @@ REST_FRAMEWORK = {
         'oauth2_provider.contrib.rest_framework.OAuth2Authentication',
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '10000/hour',
-        'user': '50000/hour'
+        'anon': '1000/hour',
+        'user': '5000/hour'
     }
 }
 
@@ -152,13 +142,6 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-
-# STATIC_URL = '/assets/'
-
-# if DEBUG:
-#     STATICFILES_DIRS = [os.path.join(BASE_DIR, 'chronicle-client/dist/assets')]
-# else:
-#     STATIC_ROOT = '/assets/'
 
 MEDIA_URL = '/media/'
 
