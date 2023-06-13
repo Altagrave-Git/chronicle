@@ -19,6 +19,9 @@ class Project(models.Model):
     def get_image_path(instance, filename):
         return f'projects/{instance.name}/thumbnail/{filename}'
     
+    def get_svg_path(instance, filename):
+        return f'projects/{instance.name}/logo/{filename}'
+    
     name = models.CharField(max_length=100, unique=True)
     category = models.CharField(max_length=100)
     description = models.TextField(max_length=1000, null=True, blank=True)
@@ -26,6 +29,7 @@ class Project(models.Model):
     site = models.URLField(blank=True, null=True)
     repo = models.URLField(blank=True, null=True)
     image = models.ImageField(upload_to=get_image_path, default='projects/default.png')
+    logo = models.FileField(upload_to=get_svg_path, null=True, blank=True)
     order = models.IntegerField(blank=True, null=True)
 
     def __str__(self):
@@ -58,7 +62,7 @@ class ProjectSection(models.Model):
 
 class ProjectImage(models.Model):
     def get_image_path(instance, filename):
-        return f'projects/{instance.project.name}/{filename}'
+        return f'projects/{instance.project.name}/images/{filename}'
     
     TYPES = (
         ('desktop-display', 'Desktop Display'),
@@ -68,6 +72,7 @@ class ProjectImage(models.Model):
     )
 
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='images', null=True, blank=True)
+    section = models.ForeignKey(ProjectSection, on_delete=models.CASCADE, related_name='images', null=True, blank=True)
     image = models.ImageField(upload_to=get_image_path, default='projects/default.png')
     type = models.CharField(max_length=20, choices=TYPES, default='other')
 
@@ -76,6 +81,22 @@ class ProjectImage(models.Model):
     
     class Meta:
         ordering = ['project']
+
+
+class ProjectVideo(models.Model):
+    def get_video_path(instance, filename):
+        return f'projects/{instance.project.name}/videos/{filename}'
+
+    title = models.CharField(max_length=100)
+    video = models.FileField(upload_to=get_video_path, null=True, blank=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
+    section = models.ForeignKey(ProjectSection, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
+
+    def __str__(self):
+        return self.project.name + '//' + self.title
+    
+    class Meta:
+        ordering = ['project', 'section', 'title']
 
 
 LEXERS = [item for item in get_all_lexers() if item[1]]
