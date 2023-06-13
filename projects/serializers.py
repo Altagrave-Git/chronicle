@@ -1,18 +1,20 @@
 from rest_framework import serializers
-from .models import Project, ProjectSection, ProjectImage, Snippet, Technology, LANGUAGE_CHOICES, STYLE_CHOICES
+from .models import Project, ProjectSection, ProjectImage, ProjectVideo, Snippet, Technology, LANGUAGE_CHOICES, STYLE_CHOICES
 
 
 class ProjectSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=100)
     category = serializers.CharField(max_length=100)
-    image = serializers.ImageField(allow_null=True)
-    description = serializers.CharField(max_length=1000, allow_null=True, allow_blank=True)
+    image = serializers.ImageField(allow_null=True, required=False)
+    logo = serializers.FileField(allow_null=True, required=False)
+    description = serializers.CharField(max_length=1000, allow_null=True, required=False)
     site = serializers.URLField(allow_null=True, allow_blank=True)
     repo = serializers.URLField(allow_null=True, allow_blank=True)
     tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
+    videos = serializers.SerializerMethodField(allow_null=True, read_only=True)
     snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
 
     def get_tech(self, obj):
@@ -26,6 +28,10 @@ class ProjectSerializer(serializers.Serializer):
     def get_images(self, obj):
         images = ProjectImageSerializer(obj.images.all(), many=True).data
         return images
+    
+    def get_videos(self, obj):
+        videos = ProjectVideoSerializer(obj.videos.all(), many=True).data
+        return videos
     
     def get_snippets(self, obj):
         snippets = SnippetSerializer(obj.snippets.all(), many=True).data
@@ -49,18 +55,20 @@ class ProjectSerializer(serializers.Serializer):
         fields = ['id', 'name', 'category', 'description', 'site', 'repo']
 
 class ProjectSectionSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=1000)
-    project = serializers.CharField(max_length=100)
-    images = serializers.SerializerMethodField(allow_null=True)
     type = serializers.ChoiceField(choices=ProjectSection.SECTION_TYPES)
+    video = serializers.URLField(allow_null=True, required=False)
     order = serializers.IntegerField(default=0, allow_null=True)
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
     snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
+    images = serializers.SerializerMethodField(allow_null=True, required=False)
 
     def get_snippets(self, obj):
         snippets = SnippetSerializer(obj.snippets.all(), many=True).data
         return snippets
-
+    
     def get_images(self, obj):
         images = ProjectImageSerializer(obj.images.all(), many=True).data
         return images
@@ -73,19 +81,21 @@ class ProjectSectionSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.project = validated_data.get('project', instance.project)
         instance.type = validated_data.get('type', instance.type)
+        instance.video = validated_data.get('video', instance.video)
         instance.order = validated_data.get('order', instance.order)
         instance.save()
         return instance
     
     class Meta:
         model = ProjectSection
-        fields = ['title', 'description', 'project']
+        fields = ['id', 'title', 'description', 'project']
 
 
 class ProjectImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
     type = serializers.ChoiceField(choices=ProjectImage.TYPES)
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+    section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all())
 
     def create(self, validated_data):
         instance = ProjectImage.objects.create(**validated_data)
@@ -104,11 +114,35 @@ class ProjectImageSerializer(serializers.Serializer):
         fields = ['image', 'project', 'type']
 
 
+class ProjectVideoSerializer(serializers.Serializer):
+    title = serializers.CharField(max_length=100)
+    video = serializers.FileField()
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
+    section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all(), allow_null=True, required=False)
+
+    def create(self, validated_data):
+        instance = ProjectVideo.objects.create(**validated_data)
+
+        return instance
+
+    def update(self, instance, validated_data):
+        instance.title = validated_data.get('title', instance.title)
+        instance.video = validated_data.get('video', instance.video)
+        instance.project = validated_data.get('project', instance.project)
+        instance.section = validated_data.get('section', instance.section)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = ProjectVideo
+        fields = ['title', 'video', 'project', 'section']
+
+
 class SnippetSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    project = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    project_section = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    title = serializers.CharField(required=False, allow_blank=True, max_length=100)
+    project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all(), allow_null=True, required=False)
+    project_section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all(), allow_null=True, required=False)
+    title = serializers.CharField(required=False, allow_null=True, max_length=100)
     code = serializers.CharField(style={'base_template': 'textarea.html'})
     highlighted = serializers.CharField(read_only=True)
     language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
