@@ -1,6 +1,6 @@
 from rest_framework.response import Response
-from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, SnippetSerializer, TechnologySerializer
-from .models import Project, ProjectSection, ProjectImage, Snippet, Technology
+from .serializers import ProjectSerializer, ProjectSectionSerializer, ProjectImageSerializer, ProjectVideoSerializer, SnippetSerializer, TechnologySerializer
+from .models import Project, ProjectSection, ProjectImage, ProjectVideo, Snippet, Technology, LANGUAGE_CHOICES, STYLE_CHOICES
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes, renderer_classes
 from rest_framework import permissions
 from rest_framework import status
@@ -22,11 +22,9 @@ def projects(request):
 
         return Response(serializer.data)
 
-    
     # POST a new project
     elif request.method == 'POST':
         if request.user.is_superuser:
-            print(request.data)
             serializer = ProjectSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
@@ -37,7 +35,7 @@ def projects(request):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project(request, project_id):
     try:
         project = Project.objects.get(id=project_id)
@@ -70,11 +68,12 @@ def project(request, project_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_sections(request, project_id):
+    project = Project.objects.get(id=project_id)
+
     # GET all project sections
     if request.method == 'GET':
-        project = Project.objects.get(id=project_id)
         sections = project.sections.all()
         serializer = ProjectSectionSerializer(sections, many=True)
         return Response(serializer.data)
@@ -84,13 +83,16 @@ def project_sections(request, project_id):
         serializer = ProjectSectionSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
+                
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors)
-    
+    return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_section(request, project_id, section_id):
     try:
         section = ProjectSection.objects.get(id=section_id)
@@ -179,14 +181,76 @@ def project_image(request, project_id, image_id):
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@parser_classes([parsers.FormParser, parsers.MultiPartParser])
+def project_videos(request, project_id):
+    try: project = Project.objects.get(id=project_id)
+    except: Response({"message":"project does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
+    # GET all project videos
+    if request.method == 'GET':
+        project_videos = project.videos.all()
+        serializer = ProjectVideoSerializer(project_videos, many=True)
+        return Response(serializer.data)
+    
+    # POST a new project video
+    elif request.method == 'POST':
+        if request.user.is_staff:
+            serializer = ProjectVideoSerializer(data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    
+
+@api_view(['GET', 'PUT', 'DELETE'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+def project_video(request, project_id, video_id):
+    try:
+        project_video = ProjectVideo.objects.get(id=video_id)
+    except ProjectVideo.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+    
+    # GET a project video
+    if request.method == 'GET':
+        serializer = ProjectVideoSerializer(project_video)
+        return Response(serializer.data)
+    
+    # PUT a project video
+    elif request.method == 'PUT':
+        if request.user.is_staff:
+            serializer = ProjectVideoSerializer(project_video, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    
+    # DELETE a project video
+    elif request.method == 'DELETE':
+        if request.user.is_staff:
+            project_video.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    
+
+@api_view(['GET', 'POST'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def snippets(request, project_id):
     # GET all snippets
     if request.method == 'GET':
         project = Project.objects.get(id=project_id)
         snippets = project.snippets.all()
         serializer = SnippetSerializer(snippets, many=True)
-        return Response(serializer.data)
+
+        data = {
+            "snippets": serializer.data,
+            "languages": LANGUAGE_CHOICES,
+            "styles": STYLE_CHOICES
+        }
+        return Response(data)
     
     # POST a new snippet
     elif request.method == 'POST':
@@ -201,7 +265,7 @@ def snippets(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def snippet(request, project_id, snippet_id):
     try:
         snippet = Snippet.objects.get(id=snippet_id)
@@ -227,13 +291,13 @@ def snippet(request, project_id, snippet_id):
     elif request.method == 'DELETE':
         if request.user.is_staff:
             snippet.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response(status=status.HTTP_200_OK)
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     
 
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@renderer_classes([renderers.JSONRenderer, renderers.HTMLFormRenderer, renderers.MultiPartRenderer])
+@renderer_classes([renderers.JSONRenderer, renderers.HTMLFormRenderer, renderers.MultiPartRenderer, renderers.BrowsableAPIRenderer])
 def tech_view(request, project_id):
     # GET a projects technologies
     if request.method == 'GET':
