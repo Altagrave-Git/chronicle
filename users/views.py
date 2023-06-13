@@ -44,7 +44,6 @@ def auth_view(request):
         # retrieve the authorization code from the request and the code verifier from the session
         code = request.data.get("code")
         verifier = request.session.get("code_verifier")
-        print(verifier)
         verifier = jwt.decode(verifier, CLIENT_SECRET, algorithms=["HS256"])
         verifier = verifier.get("verifier").encode('utf-8')
         request.session["code_verifier"] = None
@@ -97,9 +96,6 @@ def auth_view(request):
                 return Response(data="Invalid access token hash", status=status.HTTP_400_BAD_REQUEST)
             if decrypted_id_token.get("aud") != CLIENT_ID:
                 return Response(data="Invalid client", status=status.HTTP_400_BAD_REQUEST)
-                
-            # print the decrypted id token
-            print(decrypted_id_token)
 
             # retrieve user data from the id token
             username = decrypted_id_token.get("preferred_username")
@@ -244,7 +240,6 @@ def logout_view(request):
 @permission_classes([permissions.AllowAny])
 @api_view(["POST"])
 def intro(request):
-    print(request.user)
     if request.user.is_authenticated:
         data = {
             'user': request.user.username
