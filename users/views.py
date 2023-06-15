@@ -9,7 +9,7 @@ import random
 import string
 import base64
 import hashlib
-from djangoServer import settings
+from main import settings
 import requests
 import jwt
 from django.utils import timezone

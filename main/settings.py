@@ -40,7 +40,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'djangoServer.urls'
+ROOT_URLCONF = 'main.urls'
 
 if DEBUG:
     CORS_ALLOWED_ORIGINS = [
@@ -85,7 +85,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'djangoServer.wsgi.application'
+WSGI_APPLICATION = 'main.wsgi.application'
 
 if DEBUG:
     DATABASES = {
