@@ -25,7 +25,7 @@ jobs:
         appfile=$(find ~/chronicle-runner -type f -name "*manage.py")
         appdir=$(dirname $appfile)
         cd $appdir
-        echo "${{ secrets.CHRONICLE_ENV }}" > djangoServer/.env
+        echo "${{ secrets.CHRONICLE_ENV }}" > main/.env
         virtualenv chronicle-env
         source chronicle-env/bin/activate
         pip install -r requirements.txt
