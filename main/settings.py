@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users.apps.UsersConfig',
     'projects.apps.ProjectsConfig',
+    'contact.apps.ContactConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,6 +125,7 @@ AUTH_PASSWORD_VALIDATORS = [
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
 REDIRECT_URI = os.environ.get("REDIRECT_URI")
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': [
