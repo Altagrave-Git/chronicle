@@ -11,6 +11,7 @@ class ProjectSerializer(serializers.Serializer):
     description = serializers.CharField(max_length=1000, allow_null=True, required=False)
     site = serializers.URLField(allow_null=True, allow_blank=True)
     repo = serializers.URLField(allow_null=True, allow_blank=True)
+    order = serializers.IntegerField(allow_null=True, required=False)
     tech = serializers.SerializerMethodField(allow_null=True, read_only=True)
     sections = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, read_only=True)
@@ -30,7 +31,7 @@ class ProjectSerializer(serializers.Serializer):
         return images
     
     def get_videos(self, obj):
-        videos = ProjectVideoSerializer(obj.videos.all(), many=True).data
+        videos = ProjectVideoSerializer(obj.videos.order_by('id').all(), many=True).data
         return videos
     
     def get_snippets(self, obj):
@@ -47,12 +48,13 @@ class ProjectSerializer(serializers.Serializer):
         instance.site = validated_data.get('site', instance.site)
         instance.repo = validated_data.get('repo', instance.repo)
         instance.image = validated_data.get('image', instance.image)
+        instance.order = validated_data.get('order', instance.order)
         instance.save()
         return instance
     
     class Meta:
         model = Project
-        fields = ['id', 'name', 'category', 'description', 'site', 'repo']
+        fields = ['id', 'name', 'category', 'description', 'site', 'repo', 'order']
 
 class ProjectSectionSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
@@ -95,7 +97,7 @@ class ProjectImageSerializer(serializers.Serializer):
     image = serializers.ImageField()
     type = serializers.ChoiceField(choices=ProjectImage.TYPES)
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
-    section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all())
+    section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all(), allow_null=True, required=False)
 
     def create(self, validated_data):
         instance = ProjectImage.objects.create(**validated_data)
