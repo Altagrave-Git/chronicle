@@ -1,8 +1,5 @@
-from django.shortcuts import render
-from webpush import send_user_notification
 from users.models import User
 from main.settings import SENDGRID_API_KEY
-from django.http import HttpResponse
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import Mail
 from rest_framework.decorators import authentication_classes, parser_classes, renderer_classes, throttle_classes, permission_classes, api_view
