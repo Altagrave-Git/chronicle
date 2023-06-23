@@ -80,7 +80,7 @@ class ProjectImage(models.Model):
         return self.project.name + ' - ' + str(self.image)
     
     class Meta:
-        ordering = ['project']
+        ordering = ['project', 'section']
 
 
 class ProjectVideo(models.Model):
