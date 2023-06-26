@@ -118,6 +118,7 @@ class ProjectImageSerializer(serializers.Serializer):
 
 class ProjectVideoSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=100)
+    description = serializers.CharField(max_length=1000)
     video = serializers.FileField()
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
     section = serializers.PrimaryKeyRelatedField(queryset=ProjectSection.objects.all(), allow_null=True, required=False)
@@ -129,6 +130,7 @@ class ProjectVideoSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         instance.title = validated_data.get('title', instance.title)
+        instance.description = validated_data.get('description', instance.description)
         instance.video = validated_data.get('video', instance.video)
         instance.project = validated_data.get('project', instance.project)
         instance.section = validated_data.get('section', instance.section)
@@ -137,7 +139,7 @@ class ProjectVideoSerializer(serializers.Serializer):
     
     class Meta:
         model = ProjectVideo
-        fields = ['title', 'video', 'project', 'section']
+        fields = ['title', 'description', 'video', 'project', 'section']
 
 
 class SnippetSerializer(serializers.Serializer):
