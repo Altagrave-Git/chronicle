@@ -88,6 +88,7 @@ class ProjectVideo(models.Model):
         return f'projects/{instance.project.name}/videos/{filename}'
 
     title = models.CharField(max_length=100)
+    description = models.CharField(max_length=1000, null=True, blank=True)
     video = models.FileField(upload_to=get_video_path, null=True, blank=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
     section = models.ForeignKey(ProjectSection, on_delete=models.CASCADE, related_name='videos', null=True, blank=True)
