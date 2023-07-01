@@ -61,8 +61,7 @@ class ProjectSectionSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=100)
     description = serializers.CharField(max_length=1000)
     type = serializers.ChoiceField(choices=ProjectSection.SECTION_TYPES)
-    video = serializers.URLField(allow_null=True, required=False)
-    order = serializers.IntegerField(default=0, allow_null=True)
+    order = serializers.IntegerField(default=0, allow_null=True, required=False)
     project = serializers.PrimaryKeyRelatedField(queryset=Project.objects.all())
     snippets = serializers.SerializerMethodField(allow_null=True, read_only=True)
     images = serializers.SerializerMethodField(allow_null=True, required=False)
@@ -83,7 +82,6 @@ class ProjectSectionSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.project = validated_data.get('project', instance.project)
         instance.type = validated_data.get('type', instance.type)
-        instance.video = validated_data.get('video', instance.video)
         instance.order = validated_data.get('order', instance.order)
         instance.save()
         return instance
