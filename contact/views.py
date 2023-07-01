@@ -11,18 +11,18 @@ from rest_framework import status
 
 
 @api_view(['GET'])
-@permission_classes([permissions.AllowAny])
+@permission_classes([permissions.IsAdminUser])
 @parser_classes([parsers.JSONParser])
 def messages(request):
     if request.method == 'GET':
-        message_set = Message.objects.order_by('timestamp').reverse().all()
+        message_set = Message.objects.order_by("timestamp").reverse().all()
+
         if message_set.exists():
-            message_set = message_set[0:50]
             serializer = MessageSerializer(message_set, many=True)
             return Response(data=serializer.data, status=status.HTTP_200_OK)
 
         else:
-            return Response({'message': 'no content'}, status=status.HTTP_204_NO_CONTENT)
+            return Response({'message': 'no content'}, status=status.HTTP_200_OK)
         
 
 @api_view(['POST'])
