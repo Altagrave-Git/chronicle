@@ -25,6 +25,24 @@ def messages(request):
             return Response({'message': 'no content'}, status=status.HTTP_200_OK)
         
 
+@api_view(['PUT', 'DELETE'])
+@permission_classes([permissions.IsAdminUser])
+@parser_classes([parsers.JSONParser])
+def message(request, id):
+    try:
+        message = Message.objects.get(id=id)
+    except: return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'PUT':
+        message.is_new = False
+        message.save()
+        return Response({"is_new": False}, status=status.HTTP_200_OK)
+    
+    if request.method == 'DELETE':
+        message.delete()
+        return Response(status=status.HTTP_200_OK)
+        
+
 @api_view(['POST'])
 @permission_classes([permissions.AllowAny])
 @throttle_classes([throttling.AnonRateThrottle, throttling.UserRateThrottle])
@@ -60,3 +78,14 @@ def send(request):
     
     else:
         Response({'message': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAdminUser])
+@parser_classes([parsers.JSONParser])
+def check(request):
+    if request.method == 'GET':
+        if Message.objects.filter(is_new=True).exists():
+            return Response(True)
+        else:
+            return Response(False)
