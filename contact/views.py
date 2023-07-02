@@ -86,6 +86,6 @@ def send(request):
 def check(request):
     if request.method == 'GET':
         if Message.objects.filter(is_new=True).exists():
-            return Response(True)
+            return Response(True, status=status.HTTP_200_OK)
         else:
-            return Response(False)
+            return Response(False, status=status.HTTP_200_OK)
