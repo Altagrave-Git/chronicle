@@ -6,7 +6,7 @@ from django.contrib.sessions.models import Session
 @api_view(['GET'])
 def index(request):
     data = [
-        'Hello, welcome to chronicle API',
+        'Hello, welcome to Chronicle API',
         {
         'endpoints': {
             'projects': '/projects/',
