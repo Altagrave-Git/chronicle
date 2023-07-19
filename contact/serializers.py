@@ -5,6 +5,7 @@ class MessageSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     sender = serializers.CharField(max_length=100)
     contact = serializers.CharField(max_length=100)
+    subject = serializers.CharField(max_length=200, allow_null=True, required=False)
     content = serializers.CharField(max_length=2000)
     timestamp = serializers.DateTimeField(read_only=True)
     is_new = serializers.BooleanField(allow_null=True, required=False)
@@ -25,6 +26,7 @@ class MessageSerializer(serializers.Serializer):
     def update(self, instance, **validated_data):
         instance.sender = validated_data.get('sender', instance.sender)
         instance.contact = validated_data.get('contact', instance.contact)
+        instance.subject = validated_data.get('subject', instance.subject)
         instance.content = validated_data.get('content', instance.content)
         instance.is_new = validated_data.get('is_new', instance.is_new)
         instance.save()
