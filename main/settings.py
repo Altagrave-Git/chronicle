@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'users.apps.UsersConfig',
     'projects.apps.ProjectsConfig',
+    'blog.apps.BlogConfig',
     'contact.apps.ContactConfig',
     'django.contrib.admin',
     'django.contrib.auth',
