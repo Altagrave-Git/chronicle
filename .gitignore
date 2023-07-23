@@ -5,3 +5,5 @@ migrations/
 db.sqlite3
 .env
 media/projects/*/*
+/media/*/*/*/*.jpg
+media/*/*/*/*.png
