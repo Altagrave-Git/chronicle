@@ -1,15 +1,33 @@
 from rest_framework import serializers
-from .models import Post, Section, Paragraph, Image, Video, Snippet, Link, LANGUAGE_CHOICES, STYLE_CHOICES
+from .models import Category, Post, Content, Subtitle, Paragraph, Link, Snippet, Image, Video, LANGUAGE_CHOICES, STYLE_CHOICES, CONTENT_TYPES
+
+
+class CategorySerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    name = serializers.CharField(max_length=100)
+
+    def create(self, validated_data):
+        return Category.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = Category
+        fields = '__all__'
 
 
 class PostSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     title = serializers.CharField(max_length=200)
     slug = serializers.CharField(read_only=True)
-    category = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=1000, allow_null=True, required=False)
     image = serializers.ImageField(allow_null=True, required=False)
-    timestamp = serializers.DateTimeField(read_only=True)
+    timestamp = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
+    published = serializers.BooleanField(allow_null=True, required=False)
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
 
     def create(self, validated_data):
         return Post.objects.create(**validated_data)
@@ -27,52 +45,92 @@ class PostSerializer(serializers.Serializer):
         fields = '__all__'
 
 
-class SectionSerializer(serializers.Serializer):
+class SubtitleSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(max_length=200)
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
-    order = serializers.IntegerField(allow_null=True, required=False)
+    text = serializers.CharField(max_length=200)
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
 
     def create(self, validated_data):
-        return Section.objects.create(**validated_data)
-
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.post = validated_data.get('post', instance.post)
-        instance.order = validated_data.get('order', instance.order)
-        instance.save()
-        return instance
+        return super().create(**validated_data)
     
+    def update(self, instance, validated_data):
+        instance.text = validated_data.get('text', instance.text)
+        instance.post = validated_data.get('post', instance.post)
+
     class Meta:
-        model = Section
-        fields = '__all__'
+        model = Subtitle
+        fields = ['id', 'text']
 
 
 class ParagraphSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
-    section = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all())
     text = serializers.CharField(max_length=1000)
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
 
     def create(self, validated_data):
         return Paragraph.objects.create(**validated_data)
     
     def update(self, instance, validated_data):
-        instance.section = validated_data.get('section', instance.section)
         instance.text = validated_data.get('text', instance.text)
+        instance.post = validated_data.get('post', instance.post)
         instance.save()
         return instance
     
     class Meta:
         model = Paragraph
-        fields = '__all__'
+        fields = ['id', 'text']
+
+
+class LinkSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    text = serializers.CharField(max_length=200)
+    href = serializers.URLField()
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
+
+    def create(self, validated_data):
+        return Link.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.text = validated_data.get('text', instance.text)
+        instance.href = validated_data.get('href', instance.href)
+        instance.post = validated_data.get('post', instance.post)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = Link
+        fields = ['id', 'text', 'href']
+
+
+class SnippetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    code = serializers.CharField(style={'base_template': 'textarea.html'})
+    highlighted = serializers.CharField(read_only=True)
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
+    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='monokai')
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
+
+    def create(self, validated_data):
+        return Snippet.objects.create(**validated_data)
+    
+    def update(self, instance, validated_data):
+        instance.code = validated_data.get('code', instance.code)
+        instance.language = validated_data.get('language', instance.language)
+        instance.style = validated_data.get('style', instance.style)
+        instance.post = validated_data.get('post', instance.post)
+        instance.save()
+        return instance
+    
+    class Meta:
+        model = Snippet
+        fields = ['id', 'code', 'highlighted', 'language', 'style']
 
 
 class ImageSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
+    title = serializers.CharField(max_length=100)
     image = serializers.ImageField()
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
-    section = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), allow_null=True, required=False)
-    paragraph = serializers.PrimaryKeyRelatedField(queryset=Paragraph.objects.all(), allow_null=True, required=False)
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
 
     def create(self, validated_data):
         return Image.objects.create(**validated_data)
@@ -80,14 +138,12 @@ class ImageSerializer(serializers.Serializer):
     def update(self, instance, validated_data):
         instance.image = validated_data.get('image', instance.image)
         instance.post = validated_data.get('post', instance.post)
-        instance.section = validated_data.get('section', instance.section)
-        instance.paragraph = validated_data.get('paragraph', instance.paragraph)
         instance.save()
         return instance
     
     class Meta:
         model = Image
-        fields = '__all__'
+        fields = ['id', 'title', 'image']
 
 
 class VideoSerializer(serializers.Serializer):
@@ -95,8 +151,7 @@ class VideoSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=1000)
     description = serializers.CharField(max_length=1000)
     video = serializers.FileField()
-    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
-    section = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all())
+    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
 
     def create(self, validated_data):
         return Video.objects.create(**validated_data)
@@ -106,58 +161,27 @@ class VideoSerializer(serializers.Serializer):
         instance.description = validated_data.get('description', instance.description)
         instance.video = validated_data.get('video', instance.video)
         instance.post = validated_data.get('post', instance.post)
-        instance.section = validated_data.get('section', instance.section)
         instance.save()
         return instance
     
     class Meta:
         model = Video
-        fields = '__all__'
+        fields = ['id', 'title', 'description', 'video']
 
 
-class SnippetSerializer(serializers.Serializer):
-    id = serializers.IntegerField(read_only=True)
-    title = serializers.CharField(required=False, allow_null=True, max_length=100)
-    code = serializers.CharField(style={'base_template': 'textarea.html'})
-    highlighted = serializers.CharField(read_only=True)
-    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, default='python')
-    style = serializers.ChoiceField(choices=STYLE_CHOICES, default='monokai')
-    section = serializers.PrimaryKeyRelatedField(queryset=Section.objects.all(), allow_null=True, required=False)
+class ContentSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=CONTENT_TYPES)
     order = serializers.IntegerField()
+    content = serializers.SerializerMethodField()
+    
+    subtitle = serializers.PrimaryKeyRelatedField(queryset=Subtitle.objects.all(), allow_null=True, required=False)
+    paragraph = serializers.PrimaryKeyRelatedField(queryset=Paragraph.objects.all(), allow_null=True, required=False)
+    link = serializers.PrimaryKeyRelatedField(queryset=Link.objects.all(), allow_null=True, required=False)
+    snippet = serializers.PrimaryKeyRelatedField(queryset=Snippet.objects.all(), allow_null=True, required=False)
+    image = serializers.PrimaryKeyRelatedField(queryset=Image.objects.all(), allow_null=True, required=False)
+    video = serializers.PrimaryKeyRelatedField(queryset=Video.objects.all(), allow_null=True, required=False)
 
-    def create(self, validated_data):
-        return Snippet.objects.create(**validated_data)
-    
-    def update(self, instance, validated_data):
-        instance.title = validated_data.get('title', instance.title)
-        instance.code = validated_data.get('code', instance.code)
-        instance.language = validated_data.get('language', instance.language)
-        instance.style = validated_data.get('style', instance.style)
-        instance.section = validated_data.get('section', instance.section)
-        instance.order = validated_data.get('order', instance.order)
-        instance.save()
-        return instance
-    
     class Meta:
-        model = Snippet
+        model = Content
         fields = '__all__'
-
-
-class LinkSerializer(serializers.Serializer):
-    paragraph = serializers.PrimaryKeyRelatedField(queryset=Paragraph.objects.all())
-    text = serializers.CharField(max_length=200)
-    href = serializers.URLField()
-
-    def create(self, validated_data):
-        return Link.objects.create(**validated_data)
-    
-    def update(self, instance, validated_data):
-        instance.paragraph = validated_data.get('paragraph', instance.paragraph)
-        instance.text = validated_data.get('text', instance.text)
-        instance.href = validated_data.get('href', instance.href)
-        instance.save()
-        return instance
-    
-    class Meta:
-        model = Link
-        fields = '__all__'
+        
