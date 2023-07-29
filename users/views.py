@@ -237,18 +237,13 @@ def logout_view(request):
     
     else: Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+# initial introspection request to retrieve back end access token
 @permission_classes([permissions.AllowAny])
 @api_view(["POST"])
 def intro(request):
     if request.user.is_authenticated:
-        data = {
-            'user': request.user.username
-        }
-
-        return Response(data=data, status=status.HTTP_200_OK)
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
     else:
-        data = {
-            'msg': 'NOPE!'
-        }
-
-        return Response()
+        return Response(status=status.HTTP_200_OK)
