@@ -13,6 +13,7 @@ from rest_framework import renderers
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.MultiPartParser, parsers.FormParser])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def projects(request):
 
     # GET all projects
@@ -125,6 +126,7 @@ def project_section(request, project_id, section_id):
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_images(request, project_id):
     try: project = Project.objects.get(id=project_id)
     except: Response({"exception":"object does not exist"}, status=status.HTTP_404_NOT_FOUND)
@@ -149,7 +151,7 @@ def project_images(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
-@authentication_classes([])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_image(request, project_id, image_id):
     try:
         project_image = ProjectImage.objects.get(id=image_id)
@@ -182,6 +184,7 @@ def project_image(request, project_id, image_id):
 @api_view(['GET', 'POST'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 @parser_classes([parsers.FormParser, parsers.MultiPartParser])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_videos(request, project_id):
     try: project = Project.objects.get(id=project_id)
     except: Response({"message":"project does not exist"}, status=status.HTTP_404_NOT_FOUND)
@@ -206,6 +209,7 @@ def project_videos(request, project_id):
 
 @api_view(['GET', 'PUT', 'DELETE'])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
 def project_video(request, project_id, video_id):
     try:
         project_video = ProjectVideo.objects.get(id=video_id)
