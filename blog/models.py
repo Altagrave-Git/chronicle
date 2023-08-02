@@ -14,6 +14,7 @@ from django.utils import timezone
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    slug = models.SlugField(max_length=100, null=True, blank=True, unique=True)
 
     def __str__(self):
         return self.name
@@ -25,7 +26,7 @@ class Category(models.Model):
         return super().delete(*args, **kwargs)
     
     def save(self, *args, **kwargs):
-        self.name = self.name.lower().replace(' ', '-')
+        self.slug = slugify(self.name)
         super().save(*args, **kwargs)
         return self
     
@@ -86,8 +87,8 @@ class Post(models.Model):
             if os.path.exists(path):
                 os.remove(path)
 
-        if self.contents.all().exists():
-            self.contents.all().delete()
+        self.images.all().delete()
+        self.videos.all().delete()
 
         return super().delete(*args, **kwargs)
 
@@ -100,88 +101,165 @@ LANGUAGE_CHOICES = sorted([(item[1][0], item[0]) for item in LEXERS])
 STYLE_CHOICES = sorted([(item, item) for item in get_all_styles()])
 
 CONTENT_TYPES = [
-    ('subtitle', 'Subtitle'),
+    ('title', 'Title'),
     ('paragraph', 'Paragraph'),
-    ('link', 'Link'),
     ('image', 'Image'),
     ('video', 'Video'),
     ('snippet', 'Code Snippet'),
 ]
 
-class Content(models.Model):
-    def get_image_path(instance, filename=None):
-        return f'blog/images/{filename}'
-    
-    def get_video_path(instance, filename=None):
-        return f'blog/videos/{filename}'
+CONTENT_SIZES = [
+    ('xs', 'Extra Small'),
+    ('s', 'Small'),
+    ('m', 'Medium'),
+    ('l', 'Large'),
+    ('xl', 'Extra Large')
+]
 
-    type = models.CharField(choices=CONTENT_TYPES, max_length=20)
+class Title(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='titles')
+    type = models.CharField(choices=CONTENT_TYPES, default='title', max_length=20)
     order = models.IntegerField()
-    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='contents')
 
-    text = models.TextField(null=True, blank=True)
-    text_alt = models.TextField(null=True, blank=True)
-    href = models.URLField(null=True, blank=True)
-    start = models.IntegerField(null=True, blank=True)
-    end = models.IntegerField(null=True, blank=True)
-    language = models.CharField(choices=LANGUAGE_CHOICES, max_length=100, null=True, blank=True)
-    style = models.CharField(choices=STYLE_CHOICES, max_length=100, null=True, blank=True)
-    image = models.ImageField(upload_to=get_image_path, null=True, blank=True)
-    video = models.FileField(upload_to=get_video_path, null=True, blank=True)
+    text = models.CharField(max_length=200)
+    size = models.CharField(choices=CONTENT_SIZES, max_length=2, default='m')
 
     def __str__(self):
-        return f'{self.order} {self.type}'
-
+        if len(self.text) > 50:
+            return f'{self.text[:50]}...'
+        else:
+            return self.text
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        return self
+    
     def delete(self, *args, **kwargs):
-        if self.image:
-            path = os.path.join(MEDIA_ROOT, self.image.name)
-            if os.path.exists(path):
-                os.remove(path)
-
-        if self.video:
-            path = os.path.join(MEDIA_ROOT, self.video.name)
-            if os.path.exists(path):
-                os.remove(path)
-
         return super().delete(*args, **kwargs)
+    
 
+class Paragraph(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='paragraphs')
+    type = models.CharField(choices=CONTENT_TYPES, default='paragraph', max_length=20)
+    order = models.IntegerField()
+
+    text = models.TextField()
+
+    def __str__(self):
+        if len(self.text) > 50:
+            return f'{self.text[:50]}...'
+        else:
+            return self.text
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        return self
+    
+    def delete(self, *args, **kwargs):
+        return super().delete(*args, **kwargs)
+    
+
+class Snippet(models.Model):
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='snippets')
+    type = models.CharField(choices=CONTENT_TYPES, default='snippet', max_length=20)
+    order = models.IntegerField()
+
+    title = models.CharField(max_length=100, null=True, blank=True)
+    text = models.TextField()
+    code = models.TextField(null=True, blank=True)
+    language = models.CharField(choices=LANGUAGE_CHOICES, max_length=100, null=True, blank=True)
+    style = models.CharField(choices=STYLE_CHOICES, max_length=100, null=True, blank=True)
+
+    def __str__(self):
+        if len(self.text) > 50:
+            return f'{self.text[:50]}...'
+        else:
+            return self.text
 
     def save(self, *args, **kwargs):
-        if self.type == 'link':
-            text_array = self.text.split()
-            text_array[self.start] = f'<a href="{self.href}">' + text_array[self.start]
-            text_array[self.end - 1] += '</a>'
-            self.text_alt = text_array[0]
-            for word in text_array[1:]:
-                self.text_alt += f' {word}'
+        lexer = get_lexer_by_name(self.language)
+        formatter = HtmlFormatter(style=self.style, full=False, noclasses=True)
+        self.code = highlight(self.text, lexer, formatter)
 
-        if self.type == 'snippet':
-            lexer = get_lexer_by_name(self.language)
-            formatter = HtmlFormatter(style=self.style, full=False, noclasses=True)
-            self.text_alt = highlight(self.text, lexer, formatter)
+        super().save(*args, **kwargs)
+        return self
+    
+    def delete(self, *args, **kwargs):
+        return super().delete(*args, **kwargs)
+    
 
-        if self.image:
-            self.image = custom_img(self.image, 800, 2)
+class Image(models.Model):
+    def get_image_path(instance, filename=None):
+        return f'blog/images/{filename}'
 
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='images')
+    type = models.CharField(choices=CONTENT_TYPES, default='image', max_length=20)
+    order = models.IntegerField()
+
+    image = models.ImageField(upload_to=get_image_path)
+    text = models.TextField(null=True, blank=True)
+    aspect = models.FloatField(default=2)
+    max_width = models.IntegerField(default=800)
+
+    def __str__(self):
+        return self.image.name
+    
+    def save(self, *args, **kwargs):
         if self.pk:
-            prev_instance = Content.objects.filter(pk=self.pk)
+            prev_instance = Image.objects.filter(pk=self.pk)
             if prev_instance.exists():
                 prev_instance = prev_instance[0]
 
-                if prev_instance.image:
-                    if (self.image and self.image != prev_instance.image) or self.type != 'image':
-                        path = os.path.join(MEDIA_ROOT, prev_instance.image.name)
-                        if os.path.exists(path):
-                            os.remove(path)
+                if self.image.name != prev_instance.image.name:
+                    path = os.path.join(MEDIA_ROOT, prev_instance.image.name)
+                    if os.path.exists(path):
+                        os.remove(path)
 
-                if prev_instance.video:
-                    if (self.video and self.video != prev_instance.video) or self.type != 'video':
-                        path = os.path.join(MEDIA_ROOT, prev_instance.video.name)
-                        if os.path.exists(path):
-                            os.remove(path)
+                    self.image = custom_img(self.image, self.max_width, self.aspect)
+        else:
+            self.image = custom_img(self.image, self.max_width, self.aspect)
             
         super().save(*args, **kwargs)
         return self
+    
+    def delete(self, *args, **kwargs):
+        path = os.path.join(MEDIA_ROOT, self.image.name)
+        if os.path.exists(path):
+            os.remove(path)
 
-    class Meta:
-        ordering = ['order']
+        return super().delete(*args, **kwargs)
+    
+
+class Video(models.Model):
+    def get_video_path(instance, filename=None):
+        return f'blog/videos/{filename}'
+
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='videos')
+    type = models.CharField(choices=CONTENT_TYPES, default='video', max_length=20)
+    order = models.IntegerField()
+
+    video = models.FileField(upload_to=get_video_path)
+    text = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return self.video.name
+    
+    def save(self, *args, **kwargs):
+        if self.pk:
+            prev_instance = Video.objects.filter(pk=self.pk)
+            if prev_instance.exists():
+                prev_instance = prev_instance[0]
+
+                if self.video != prev_instance.video:
+                    path = os.path.join(MEDIA_ROOT, prev_instance.video.name)
+                    if os.path.exists(path):
+                        os.remove(path)
+            
+        super().save(*args, **kwargs)
+        return self
+    
+    def delete(self, *args, **kwargs):
+        path = os.path.join(MEDIA_ROOT, self.video.name)
+        if os.path.exists(path):
+            os.remove(path)
+        return super().delete(*args, **kwargs)
