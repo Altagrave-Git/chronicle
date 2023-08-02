@@ -1,13 +1,20 @@
 from rest_framework import serializers
-from .models import Category, Post, Content, LANGUAGE_CHOICES, STYLE_CHOICES, CONTENT_TYPES
+from .models import Category, Post, Title, Paragraph, Snippet, Image, Video, LANGUAGE_CHOICES, STYLE_CHOICES, CONTENT_TYPES
 
 
 class CategorySerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     name = serializers.CharField(max_length=100)
+    slug = serializers.CharField(read_only=True)
+    count = serializers.SerializerMethodField()
+
+    def get_count(self, obj):
+        return obj.posts.all().count()
 
     def create(self, validated_data):
-        return Category.objects.create(**validated_data)
+        instance = Category(**validated_data)
+        instance.save()
+        return instance
     
     def update(self, instance, validated_data):
         instance.name = validated_data.get('name', instance.name)
@@ -32,10 +39,12 @@ class PostSerializer(serializers.Serializer):
         return obj.category.name
 
     def create(self, validated_data):
-        return Post.objects.create(**validated_data)
+        instance = Post(**validated_data)
+        instance.save()
+        return instance
 
     def update(self, instance, validated_data):
-        instance.title = validated_data.get('name', instance.title)
+        instance.title = validated_data.get('title', instance.title)
         instance.description = validated_data.get('description', instance.description)
         instance.image = validated_data.get('image', instance.image)
         instance.published = validated_data.get('published', instance.published)
@@ -44,82 +53,148 @@ class PostSerializer(serializers.Serializer):
         return instance
 
 
-class ContentSerializer(serializers.Serializer):
+class TitleSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     type = serializers.ChoiceField(choices=CONTENT_TYPES)
     order = serializers.IntegerField()
-    post = serializers.SlugRelatedField(queryset=Post.objects.all(), slug_field='slug')
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
 
-    text = serializers.CharField(allow_null=True, required=False)
-    text_alt = serializers.CharField(allow_null=True, required=False)
-    href = serializers.URLField(allow_null=True, required=False)
-    start = serializers.IntegerField(allow_null=True, required=False)
-    end = serializers.IntegerField(allow_null=True, required=False)
-    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES, allow_null=True, required=False)
-    style = serializers.ChoiceField(choices=STYLE_CHOICES, allow_null=True, required=False)
-    image = serializers.ImageField(allow_null=True, required=False)
-    video = serializers.FileField(allow_null=True, required=False)
+    text = serializers.CharField(max_length=200)
+    size = serializers.CharField(required=False)
 
     def create(self, validated_data):
-        content_type = validated_data.get('type')
-
-        if content_type == 'paragraph' or content_type == 'subtitle':
-            if 'text' not in validated_data:
-                raise serializers.ValidationError(f'text field is required for type: {content_type}')
-        
-        if content_type == 'link':
-            if 'text' not in validated_data or 'href' not in validated_data or 'start' not in validated_data or 'end' not in validated_data:
-                raise serializers.ValidationError("text, href, start and end are required for type: link")
-
-        if content_type == 'snippet':
-            if 'text' not in validated_data or 'language' not in validated_data or 'style' not in validated_data:
-                raise serializers.ValidationError("text, language, and style are required for type: snippet")
-            
-        if content_type == 'image':
-            if 'image' not in validated_data:
-                raise serializers.ValidationError('image field is required for type: image')
-            
-        if content_type == 'video':
-            if 'video' not in validated_data:
-                raise serializers.ValidationError('video field is required for type: video')
-
-        return Content.objects.create(**validated_data)
+        instance = Title(**validated_data)
+        instance.save()
+        return instance
     
     def update(self, instance, validated_data):
-        content_type = validated_data.get('type')
+        print(instance.id)
 
-        if content_type == 'paragraph' or content_type == 'subtitle':
-            if 'text' not in validated_data:
-                raise serializers.ValidationError(f'text field is required for type: {content_type}')
-        
-        if content_type == 'link':
-            if 'text' not in validated_data or 'href' not in validated_data or 'start' not in validated_data or 'end' not in validated_data:
-                raise serializers.ValidationError("text, href, start and end are required for type: link")
-
-        if content_type == 'snippet':
-            if 'text' not in validated_data or 'language' not in validated_data or 'style' not in validated_data:
-                raise serializers.ValidationError("text, language, and style are required for type: snippet")
-            
-        if content_type == 'image':
-            if 'image' not in validated_data:
-                raise serializers.ValidationError('image field is required for type: image')
-            
-        if content_type == 'video':
-            if 'video' not in validated_data:
-                raise serializers.ValidationError('video field is required for type: video')
-            
         instance.type = validated_data.get('type', instance.type)
         instance.order = validated_data.get('order', instance.order)
         instance.post = validated_data.get('post', instance.post)
         instance.text = validated_data.get('text', instance.text)
-        instance.text_alt = validated_data.get('text_alt', instance.text_alt)
-        instance.href = validated_data.get('href', instance.href)
-        instance.start = validated_data.get('start', instance.start)
-        instance.end = validated_data.get('end', instance.end)
-        instance.language = validated_data.get('language', instance.language)
-        instance.style = validated_data.get('style', instance.style)
-        instance.image = validated_data.get('image', instance.image)
-        instance.video = validated_data.get('video', instance.video)
+        instance.size = validated_data.get('size', instance.size)
         instance.save()
         return instance
     
+
+class ParagraphSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.ChoiceField(choices=CONTENT_TYPES)
+    order = serializers.IntegerField()
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    text = serializers.CharField()
+
+    def create(self, validated_data):
+        instance = Paragraph(**validated_data)
+        instance.save()
+        return instance
+    
+    def update(self, instance, validated_data):
+        instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
+        instance.text = validated_data.get('text', instance.text)
+        instance.save()
+        return instance
+    
+
+class SnippetSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.ChoiceField(choices=CONTENT_TYPES)
+    order = serializers.IntegerField()
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    title = serializers.CharField(allow_null=True, required=False)
+    text = serializers.CharField()
+    language = serializers.ChoiceField(choices=LANGUAGE_CHOICES)
+    style = serializers.ChoiceField(choices=STYLE_CHOICES)
+    code = serializers.CharField(read_only=True)
+
+    def create(self, validated_data):
+        instance = Snippet(**validated_data)
+        instance.save()
+        return instance
+    
+    def update(self, instance, validated_data):
+        instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
+        instance.text = validated_data.get('text', instance.text)
+        instance.language = validated_data.get('language', instance.language)
+        instance.style = validated_data.get('style', instance.style)
+        instance.save()
+        return instance
+    
+
+class ImageSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.ChoiceField(choices=CONTENT_TYPES)
+    order = serializers.IntegerField()
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    image = serializers.ImageField(required=False)
+    text = serializers.CharField(allow_null=True, required=False)
+    aspect = serializers.FloatField(required=False)
+    max_width = serializers.IntegerField(required=False)
+
+    def create(self, validated_data):
+        instance = Image(**validated_data)
+        instance.save()
+        return instance
+    
+    def update(self, instance, validated_data):
+        instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
+        instance.image = validated_data.get('image', instance.image)
+        instance.text = validated_data.get('text', instance.text)
+        instance.aspect = validated_data.get('aspect', instance.aspect)
+        instance.max_width = validated_data.get('max_width', instance.max_width)
+        instance.save()
+        return instance
+    
+
+class VideoSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    type = serializers.ChoiceField(choices=CONTENT_TYPES)
+    order = serializers.IntegerField()
+    post = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all())
+
+    video = serializers.FileField(required=False)
+    text = serializers.CharField(allow_null=True, required=False)
+
+    def create(self, validated_data):
+        instance = Video(**validated_data)
+        instance.save()
+        return instance
+    
+    def update(self, instance, validated_data):
+        instance.type = validated_data.get('type', instance.type)
+        instance.order = validated_data.get('order', instance.order)
+        instance.video = validated_data.get('video', instance.video)
+        instance.text = validated_data.get('text', instance.text)
+        instance.save()
+        return instance
+    
+
+class ContentSerializer(serializers.Serializer):
+    id = serializers.IntegerField(read_only=True)
+    slug = serializers.CharField(read_only=True)
+    timestamp = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
+    pub_date = serializers.DateField(read_only=True, format="%b %-d, %Y")
+
+    title = serializers.CharField(max_length=200)
+    description = serializers.CharField(max_length=1000, allow_null=True, required=False)
+    image = serializers.ImageField(allow_null=True, required=False)
+    published = serializers.BooleanField(allow_null=True, required=False)
+    category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
+    category_name = serializers.SerializerMethodField()
+
+    titles =  TitleSerializer(many=True, required=False)
+    paragraphs = ParagraphSerializer(many=True, required=False)
+    snippets = SnippetSerializer(many=True, required=False)
+    images = ImageSerializer(many=True, required=False)
+    videos = VideoSerializer(many=True, required=False)
+
+    def get_category_name(self, obj):
+        return obj.category.name
