@@ -1,6 +1,6 @@
 from rest_framework.response import Response
-from .serializers import CategorySerializer, PostSerializer, ContentSerializer
-from .models import Category, Post, Content
+from .serializers import CategorySerializer, PostSerializer, ContentSerializer, TitleSerializer, ParagraphSerializer, SnippetSerializer, ImageSerializer, VideoSerializer
+from .models import Category, Post, Title, Paragraph, Snippet, Image, Video
 from rest_framework.decorators import api_view, permission_classes, authentication_classes, parser_classes, renderer_classes
 from rest_framework import permissions
 from rest_framework import status
@@ -34,8 +34,8 @@ def categories_view(request):
     
     elif request.method == 'DELETE':
         if request.users.is_superuser:
-            category = request.data.get('name')
-            Category.objects.filter(name=category).delete()
+            name = request.data.get('name')
+            Category.objects.filter(name=name).delete()
             return Response(status=status.HTTP_200_OK)
         else:
             return Response(status.HTTP_401_UNAUTHORIZED)
@@ -58,7 +58,7 @@ def posts_view(request, category):
 
         else:
             try:
-                category = Category.objects.get(name=category)
+                category = Category.objects.get(slug=category)
                 posts = category.posts.all()
                 serializer = PostSerializer(posts, many=True)
                 return Response(serializer.data)
@@ -99,33 +99,38 @@ def content_view(request, category, slug):
         return Response(status.HTTP_404_NOT_FOUND)
     
     if request.method == 'GET':
-        content = post.contents.all()
-        post = PostSerializer(post)
-        content = ContentSerializer(content, many=True)
-
-        data = {
-            'post': post.data,
-            'content': content.data
-        }
+        serializer = ContentSerializer(post)
         
-        return Response(data)
-    
+        return Response(serializer.data)
+            
     elif request.method == 'POST':
         if request.user.is_superuser:
-            serializer = ContentSerializer(request.data, many=True)
+            data = request.data
+            content_methods = {
+                'title': [Title, TitleSerializer],
+                'paragraph': [Paragraph, ParagraphSerializer],
+                'snippet': [Snippet, SnippetSerializer],
+                'image': [Image, ImageSerializer],
+                'video': [Video, VideoSerializer]
+            }
+            content_type = data.get('type')
+            model = content_methods[content_type][0]
+            serializer = content_methods[content_type][1]
+
+            id = request.data.get('id')
+            if id:
+                instance = model.objects.get(id=id)
+                serializer = serializer(instance, data=data)
+            else:
+                serializer = serializer(data=data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)
             else:
                 return Response(serializer.errors)
-        else:
-            return Response(status=status.HTTP_401_UNAUTHORIZED)
     
     elif request.method == 'DELETE':
         if request.user.is_superuser:
-            pk = request.data.get('id')
-            content = Content.objects.get(pk=pk).delete()
-            content.delete()
             return Response(status=status.HTTP_200_OK)
     else:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
