@@ -4,7 +4,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 import math
 
 
-def custom_img(img_field, max_width=0, aspect_ratio=0):
+def custom_img(img_field, final_width=0, aspect_ratio=0):
     if img_field:
         name = img_field.name.split('.')[0]
         height = img_field.height
@@ -14,23 +14,21 @@ def custom_img(img_field, max_width=0, aspect_ratio=0):
 
         if img.format != 'webp':
             img_io = BytesIO()
-            if max_width and width > max_width:
-                height = math.floor(height * (max_width / width))
-                width = math.floor(max_width)
-
-                img = img.resize((width, height), Image.ANTIALIAS)
 
             if width/height > aspect_ratio:
                 width = math.floor(height * aspect_ratio)
                 x = math.floor((img.width - width) / 2)
-
                 img = img.crop((x, 0, width + x, height))
 
             elif width/height < aspect_ratio:
                 height = math.floor(width / aspect_ratio)
                 x = 0
-
                 img = img.crop((x, 0, width + x, height))
+
+            if final_width != 0:
+                height = math.floor(height * (final_width / width))
+                width = math.floor(final_width)
+                img = img.resize((width, height), resample=Image.LANCZOS, reducing_gap=3)
 
             img.save(img_io, format='webp')
 
