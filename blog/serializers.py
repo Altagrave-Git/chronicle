@@ -190,6 +190,9 @@ class ContentSerializer(serializers.Serializer):
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     category_name = serializers.SerializerMethodField()
 
+    style_choices = serializers.SerializerMethodField()
+    language_choices = serializers.SerializerMethodField()
+
     titles =  TitleSerializer(many=True, required=False)
     paragraphs = ParagraphSerializer(many=True, required=False)
     snippets = SnippetSerializer(many=True, required=False)
@@ -198,3 +201,15 @@ class ContentSerializer(serializers.Serializer):
 
     def get_category_name(self, obj):
         return obj.category.name
+    
+    def get_style_choices(self, obj):
+        if obj.published == False:
+            return STYLE_CHOICES
+        else:
+            return []
+    
+    def get_language_choices(self, obj):
+        if not obj.published:
+            return LANGUAGE_CHOICES
+        else:
+            return []
