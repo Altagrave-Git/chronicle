@@ -32,6 +32,7 @@ jobs:
         python manage.py makemigrations users
         python manage.py makemigrations projects
         python manage.py makemigrations contact
+        python manage.py makemigrations blog
         python manage.py makemigrations
         python manage.py migrate
         python manage.py collectstatic --noinput
