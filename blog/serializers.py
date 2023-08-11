@@ -34,13 +34,21 @@ class PostSerializer(serializers.Serializer):
     published = serializers.BooleanField(allow_null=True, required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     category_name = serializers.SerializerMethodField()
+    category_slug = serializers.SerializerMethodField()
+    related = serializers.PrimaryKeyRelatedField(queryset=Post.objects.all(), many=True, allow_null=True, required=False)
 
     def get_category_name(self, obj):
         return obj.category.name
+    
+    def get_category_slug(self, obj):
+        return obj.category.slug
 
     def create(self, validated_data):
+        related = validated_data.pop('related', [])
         instance = Post(**validated_data)
         instance.save()
+        if len(related):
+            instance.related.set(related)
         return instance
 
     def update(self, instance, validated_data):
@@ -50,6 +58,11 @@ class PostSerializer(serializers.Serializer):
         instance.published = validated_data.get('published', instance.published)
         instance.category = validated_data.get('category', instance.category)
         instance.save()
+
+        related = validated_data.get('related', [])
+        if len(related):
+            instance.related.clear()
+            instance.related.set(related)
         return instance
 
 
@@ -189,6 +202,7 @@ class ContentSerializer(serializers.Serializer):
     published = serializers.BooleanField(allow_null=True, required=False)
     category = serializers.PrimaryKeyRelatedField(queryset=Category.objects.all())
     category_name = serializers.SerializerMethodField()
+    related = PostSerializer(many=True, read_only=True, allow_null=True)
 
     style_choices = serializers.SerializerMethodField()
     language_choices = serializers.SerializerMethodField()
