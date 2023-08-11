@@ -46,7 +46,7 @@ class Post(models.Model):
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts')
     published = models.BooleanField(default=False)
     pub_date = models.DateField(null=True, blank=True)
-    related = models.ManyToManyField('self', blank=True, symmetrical=True)
+    related = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
         return self.slug
@@ -82,13 +82,18 @@ class Post(models.Model):
                         
     def delete(self, *args, **kwargs):
 
+        all_children = [item for item in self.titles.all()
+            ] + [item for item in self.paragraphs.all()
+            ] + [item for item in self.snippets.all()
+            ] + [item for item in self.images.all()
+            ] + [item for item in self.videos.all()]
+        
+        for child in all_children: child.delete(deleting_related=True)
+        
         if self.image:
             path = os.path.join(MEDIA_ROOT, self.image.name)
             if os.path.exists(path):
                 os.remove(path)
-
-        self.images.all().delete()
-        self.videos.all().delete()
 
         return super().delete(*args, **kwargs)
 
@@ -130,11 +135,35 @@ class Title(models.Model):
         else:
             return self.text
     
-    def save(self, *args, **kwargs):
+    def save(self, recurse=True, *args, **kwargs):
+        if recurse:
+            post_content = [item for item in self.post.titles.filter(order__gte=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gte=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gte=self.order)] + [
+                    item for item in self.post.images.filter(order__gte=self.order)] + [
+                    item for item in self.post.videos.filter(order__gte=self.order)]
+    
+            if len(post_content):
+                for item in post_content:
+                    item.order += 1
+                    item.save(recurse=False)
+
         super().save(*args, **kwargs)
         return self
     
-    def delete(self, *args, **kwargs):
+    def delete(self, deleting_related=False, *args, **kwargs):
+        if not deleting_related:
+            post_content = [item for item in self.post.titles.filter(order__gt=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gt=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gt=self.order)] + [
+                    item for item in self.post.images.filter(order__gt=self.order)] + [
+                    item for item in self.post.videos.filter(order__gt=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order -= 1
+                    item.save()
+
         return super().delete(*args, **kwargs)
     
 
@@ -151,11 +180,35 @@ class Paragraph(models.Model):
         else:
             return self.text
     
-    def save(self, *args, **kwargs):
+    def save(self, recurse=True, *args, **kwargs):
+        if recurse:
+            post_content = [item for item in self.post.titles.filter(order__gte=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gte=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gte=self.order)] + [
+                    item for item in self.post.images.filter(order__gte=self.order)] + [
+                    item for item in self.post.videos.filter(order__gte=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order += 1
+                    item.save(recurse=False)
+
         super().save(*args, **kwargs)
         return self
     
-    def delete(self, *args, **kwargs):
+    def delete(self, deleting_related=False, *args, **kwargs):
+        if not deleting_related:
+            post_content = [item for item in self.post.titles.filter(order__gt=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gt=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gt=self.order)] + [
+                    item for item in self.post.images.filter(order__gt=self.order)] + [
+                    item for item in self.post.videos.filter(order__gt=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order -= 1
+                    item.save()
+
         return super().delete(*args, **kwargs)
     
 
@@ -176,15 +229,40 @@ class Snippet(models.Model):
         else:
             return self.text
 
-    def save(self, *args, **kwargs):
+    def save(self, recurse=True, *args, **kwargs):
+
         lexer = get_lexer_by_name(self.language)
         formatter = HtmlFormatter(style=self.style, full=False, noclasses=True)
         self.code = highlight(self.text, lexer, formatter)
 
+        if recurse:
+            post_content = [item for item in self.post.titles.filter(order__gte=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gte=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gte=self.order)] + [
+                    item for item in self.post.images.filter(order__gte=self.order)] + [
+                    item for item in self.post.videos.filter(order__gte=self.order)]
+    
+            if len(post_content):
+                for item in post_content:
+                    item.order += 1
+                    item.save(recurse=False)
+
         super().save(*args, **kwargs)
         return self
     
-    def delete(self, *args, **kwargs):
+    def delete(self, deleting_related=False, *args, **kwargs):
+        if not deleting_related:
+            post_content = [item for item in self.post.titles.filter(order__gt=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gt=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gt=self.order)] + [
+                    item for item in self.post.images.filter(order__gt=self.order)] + [
+                    item for item in self.post.videos.filter(order__gt=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order -= 1
+                    item.save()
+
         return super().delete(*args, **kwargs)
     
 
@@ -204,7 +282,7 @@ class Image(models.Model):
     def __str__(self):
         return self.image.name
     
-    def save(self, *args, **kwargs):
+    def save(self, recurse=True, *args, **kwargs):
         if self.pk:
             prev_instance = Image.objects.filter(pk=self.pk)
             if prev_instance.exists():
@@ -218,14 +296,39 @@ class Image(models.Model):
                     self.image = custom_img(self.image, self.max_width, self.aspect)
         else:
             self.image = custom_img(self.image, self.max_width, self.aspect)
+
+        if recurse:
+            post_content = [item for item in self.post.titles.filter(order__gte=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gte=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gte=self.order)] + [
+                    item for item in self.post.images.filter(order__gte=self.order)] + [
+                    item for item in self.post.videos.filter(order__gte=self.order)]
+    
+            if len(post_content):
+                for item in post_content:
+                    item.order += 1
+                    item.save(recurse=False)
             
         super().save(*args, **kwargs)
         return self
     
-    def delete(self, *args, **kwargs):
+    def delete(self, deleting_related=False, *args, **kwargs):
+
         path = os.path.join(MEDIA_ROOT, self.image.name)
         if os.path.exists(path):
             os.remove(path)
+
+        if not deleting_related:
+            post_content = [item for item in self.post.titles.filter(order__gt=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gt=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gt=self.order)] + [
+                    item for item in self.post.images.filter(order__gt=self.order)] + [
+                    item for item in self.post.videos.filter(order__gt=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order -= 1
+                    item.save()
 
         return super().delete(*args, **kwargs)
     
@@ -244,7 +347,7 @@ class Video(models.Model):
     def __str__(self):
         return self.video.name
     
-    def save(self, *args, **kwargs):
+    def save(self, recurse=True, *args, **kwargs):
         if self.pk:
             prev_instance = Video.objects.filter(pk=self.pk)
             if prev_instance.exists():
@@ -254,12 +357,38 @@ class Video(models.Model):
                     path = os.path.join(MEDIA_ROOT, prev_instance.video.name)
                     if os.path.exists(path):
                         os.remove(path)
+
+        if recurse:
+            post_content = [item for item in self.post.titles.filter(order__gte=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gte=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gte=self.order)] + [
+                    item for item in self.post.images.filter(order__gte=self.order)] + [
+                    item for item in self.post.videos.filter(order__gte=self.order)]
+    
+            if len(post_content):
+                for item in post_content:
+                    item.order += 1
+                    item.save(recurse=False)
             
         super().save(*args, **kwargs)
         return self
     
-    def delete(self, *args, **kwargs):
+    def delete(self, deleting_related=False, *args, **kwargs):
+
         path = os.path.join(MEDIA_ROOT, self.video.name)
         if os.path.exists(path):
             os.remove(path)
+
+        if not deleting_related:
+            post_content = [item for item in self.post.titles.filter(order__gt=self.order)] + [
+                    item for item in self.post.paragraphs.filter(order__gt=self.order)] + [
+                    item for item in self.post.snippets.filter(order__gt=self.order)] + [
+                    item for item in self.post.images.filter(order__gt=self.order)] + [
+                    item for item in self.post.videos.filter(order__gt=self.order)]
+
+            if len(post_content):
+                for item in post_content:
+                    item.order -= 1
+                    item.save()
+
         return super().delete(*args, **kwargs)
