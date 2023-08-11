@@ -15,12 +15,12 @@ def custom_img(img_field, final_width=0, aspect_ratio=0):
         if img.format != 'webp':
             img_io = BytesIO()
 
-            if width/height > aspect_ratio:
+            if width/height > aspect_ratio and aspect_ratio != 0:
                 width = math.floor(height * aspect_ratio)
                 x = math.floor((img.width - width) / 2)
                 img = img.crop((x, 0, width + x, height))
 
-            elif width/height < aspect_ratio:
+            elif width/height < aspect_ratio and aspect_ratio != 0:
                 height = math.floor(width / aspect_ratio)
                 x = 0
                 img = img.crop((x, 0, width + x, height))
