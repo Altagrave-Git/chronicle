@@ -45,7 +45,7 @@ class Post(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE, related_name='posts')
     published = models.BooleanField(default=False)
-    pub_date = models.DateField(null=True, blank=True)
+    pub_date = models.DateTimeField(null=True, blank=True)
     related = models.ManyToManyField('self', blank=True)
 
     def __str__(self):
