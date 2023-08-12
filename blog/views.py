@@ -228,9 +228,9 @@ def content_view(request, category, slug, type, id):
         return Response(status.HTTP_405_METHOD_NOT_ALLOWED)
     
 
-@api_view(['GET', 'POST'])
+@api_view(['GET'])
 @renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
-@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@permission_classes([permissions.AllowAny])
 @parser_classes([parsers.JSONParser, parsers.FormParser, parsers.MultiPartParser])
 def related_view(request, category, slug):
     try:
@@ -239,17 +239,49 @@ def related_view(request, category, slug):
         return Response(status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
+        data = { 'related': [], 'unrelated': [] }
         related = post.related.all()
-        exclusions = [item.id for item in related] + [post.id]
+        exclusions = [post.id]
+
+        if related.exists():
+            exclusions += [item.id for item in related]
+            data['related'] = PostSerializer(related, many=True).data
+
         unrelated = Post.objects.exclude(id__in=exclusions)
+
         if unrelated.exists():
-            serializer = PostSerializer(unrelated)
-            return Response(serializer.data)
-        else:
-            return Response(status.HTTP_200_OK)
-        
-    elif request.method == 'POST':
-        return Response(status.HTTP_200_OK)
+            data['unrelated'] = PostSerializer(unrelated, many=True).data
+
+        return Response(data)
+    else:
+        return Response(status.HTTP_405_METHOD_NOT_ALLOWED)
     
+
+@api_view(['POST', 'PUT'])
+@permission_classes([permissions.IsAuthenticatedOrReadOnly])
+@parser_classes([parsers.JSONParser])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
+def change_related_view(request, category, slug, id):
+    try:
+        post = Post.objects.get(slug=slug)
+        related = Post.objects.get(id=id)
+    except:
+        return Response(status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'POST':
+        if request.user.is_superuser:
+            post.related.add(related)
+            return Response(status.HTTP_200_OK)
+
+        else:
+            return Response(status.HTTP_401_UNAUTHORIZED)
+        
+    elif request.method == 'PUT':
+        if request.user.is_superuser:
+            post.related.remove(related)
+            return Response(status.HTTP_200_OK)
+        else:
+            return Response(status.HTTP_401_UNAUTHORIZED)
+
     else:
         return Response(status.HTTP_405_METHOD_NOT_ALLOWED)
