@@ -26,7 +26,7 @@ class PostSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     slug = serializers.CharField(read_only=True)
     timestamp = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
-    pub_date = serializers.DateField(read_only=True, format="%b %-d, %Y")
+    pub_date = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
 
     title = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=1000, allow_null=True, required=False)
@@ -194,7 +194,7 @@ class ContentSerializer(serializers.Serializer):
     id = serializers.IntegerField(read_only=True)
     slug = serializers.CharField(read_only=True)
     timestamp = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
-    pub_date = serializers.DateField(read_only=True, format="%b %-d, %Y")
+    pub_date = serializers.DateTimeField(read_only=True, format="%b %-d, %Y")
 
     title = serializers.CharField(max_length=200)
     description = serializers.CharField(max_length=1000, allow_null=True, required=False)
