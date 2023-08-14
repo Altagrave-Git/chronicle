@@ -162,7 +162,7 @@ class Title(models.Model):
             if len(post_content):
                 for item in post_content:
                     item.order -= 1
-                    item.save()
+                    item.save(recurse=False)
 
         return super().delete(*args, **kwargs)
     
@@ -207,7 +207,7 @@ class Paragraph(models.Model):
             if len(post_content):
                 for item in post_content:
                     item.order -= 1
-                    item.save()
+                    item.save(recurse=False)
 
         return super().delete(*args, **kwargs)
     
@@ -261,7 +261,7 @@ class Snippet(models.Model):
             if len(post_content):
                 for item in post_content:
                     item.order -= 1
-                    item.save()
+                    item.save(recurse=False)
 
         return super().delete(*args, **kwargs)
     
@@ -328,7 +328,7 @@ class Image(models.Model):
             if len(post_content):
                 for item in post_content:
                     item.order -= 1
-                    item.save()
+                    item.save(recurse=False)
 
         return super().delete(*args, **kwargs)
     
@@ -389,6 +389,6 @@ class Video(models.Model):
             if len(post_content):
                 for item in post_content:
                     item.order -= 1
-                    item.save()
+                    item.save(recurse=False)
 
         return super().delete(*args, **kwargs)
