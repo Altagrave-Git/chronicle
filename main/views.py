@@ -15,19 +15,24 @@ def index(request):
                 'project': '/projects/:id/',
                 'sections': '/projects/:id/sections/',
                 'section': '/projects/:id/sections/:id/',
-                'images': '/projects/:id/images/',
-                'image': '/projects/:id/images/:id/',
                 'snippets': '/projects/:id/code/',
                 'snippet': '/projects/:id/code/:id/',
+                'images': '/projects/:id/images/',
+                'image': '/projects/:id/images/:id/',
+                'videos': '/projects/:id/videos/',
+                'video': '/projects/:id/videos/:id',
+                'tech': '/projects/:id/tech/'
             }},
         {
             'blog endpoints': {
-                'index': '/blog/',
-                'categories': '/blog/:category/',
+                'categories': '/blog/',
+                'category': '/blog/:category/',
                 'posts': '/blog/:category/posts/',
                 'post': '/blog/:category/posts/:slug/',
                 'contents': '/blog/:category/posts/:slug/:type/',
-                'content': '/blog/:category/posts/:slug/:type/:id/'
+                'content': '/blog/:category/posts/:slug/:type/:id/',
+                'related': '/blog/:category/posts/:slug/related/',
+                'change_related': '/blog/:category/posts/:slug/related/:id/'
             }
         }
     ]
