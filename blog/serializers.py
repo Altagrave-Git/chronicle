@@ -81,14 +81,12 @@ class TitleSerializer(serializers.Serializer):
         return instance
     
     def update(self, instance, validated_data):
-        print(instance.id)
-
         instance.type = validated_data.get('type', instance.type)
         instance.order = validated_data.get('order', instance.order)
         instance.post = validated_data.get('post', instance.post)
         instance.text = validated_data.get('text', instance.text)
         instance.size = validated_data.get('size', instance.size)
-        instance.save()
+        instance.save(recurse=False)
         return instance
     
 
@@ -109,7 +107,7 @@ class ParagraphSerializer(serializers.Serializer):
         instance.type = validated_data.get('type', instance.type)
         instance.order = validated_data.get('order', instance.order)
         instance.text = validated_data.get('text', instance.text)
-        instance.save()
+        instance.save(recurse=False)
         return instance
     
 
@@ -136,7 +134,7 @@ class SnippetSerializer(serializers.Serializer):
         instance.text = validated_data.get('text', instance.text)
         instance.language = validated_data.get('language', instance.language)
         instance.style = validated_data.get('style', instance.style)
-        instance.save()
+        instance.save(recurse=False)
         return instance
     
 
@@ -163,7 +161,7 @@ class ImageSerializer(serializers.Serializer):
         instance.text = validated_data.get('text', instance.text)
         instance.aspect = validated_data.get('aspect', instance.aspect)
         instance.max_width = validated_data.get('max_width', instance.max_width)
-        instance.save()
+        instance.save(recurse=False)
         return instance
     
 
@@ -186,7 +184,7 @@ class VideoSerializer(serializers.Serializer):
         instance.order = validated_data.get('order', instance.order)
         instance.video = validated_data.get('video', instance.video)
         instance.text = validated_data.get('text', instance.text)
-        instance.save()
+        instance.save(recurse=False)
         return instance
     
 
