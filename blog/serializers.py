@@ -9,7 +9,7 @@ class CategorySerializer(serializers.Serializer):
     count = serializers.SerializerMethodField()
 
     def get_count(self, obj):
-        return obj.posts.all().count()
+        return obj.posts.filter(published=True).count()
 
     def create(self, validated_data):
         instance = Category(**validated_data)
