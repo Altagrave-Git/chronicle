@@ -285,3 +285,14 @@ def change_related_view(request, category, slug, id):
 
     else:
         return Response(status.HTTP_405_METHOD_NOT_ALLOWED)
+    
+
+@api_view(['GET'])
+@renderer_classes([renderers.JSONRenderer, renderers.BrowsableAPIRenderer])
+def recent_posts(request):
+    posts = Post.objects.filter(published=True).order_by("-pub_date")[:3]
+    if posts.exists():
+        serializer = PostSerializer(posts)
+        return Response(serializer.data)
+    else:
+        return Response(status=status.HTTP_404_NOT_FOUND)
