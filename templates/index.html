@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  {% load static %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+  <title>Chronicle API</title>
+  <link rel="shortcut icon" href="{% static 'icon.svg' %}" type="image/svg">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <style>
+    * {
+      font-size: 97%;
+    }
+    p {
+      font-size: 0.9rem;
+    }
+    ul {
+      list-style-type: none;
+    }
+    .endpoints {
+      min-width: 250px;
+    }
+    .endpoints > h6 {
+      width: 100%;
+      margin-bottom: 0.25rem;
+    }
+    .endpoint {
+      border-right: 1px solid lightcoral;
+      border-left: 1px solid lightcoral;
+      border-bottom: 1px solid lightcoral;
+    }
+    .endpoint:first-of-type {
+      border-top: 1px solid lightcoral;
+      border-radius: 5px 5px 0 0;
+    }
+    .endpoint:last-of-type {
+      border-radius: 0 0 5px 5px;
+    }
+    .key {
+      border-right: 1px solid lightcoral;
+    }
+    @media (min-width: 768px) {
+      * {
+        font-size: 98%;
+      }
+    }
+    @media (min-width: 992px) {
+      * {
+        font-size: 100%;
+      }
+      .endpoints {
+        min-width: 375px;
+      }
+    }
+  </style>
+</head>
+<body class="bg-white">
+  <img src="{% static 'gridbg.png' %}" alt="background image" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -1; object-fit: cover; filter: grayscale(1) opacity(0.25)">
+  <header class="fixed-top d-flex flex-row justify-content-center align-items-center py-1" style="background-color: #242424;">
+    <img height="40" src="{% static 'icon.svg' %}" alt="Chronicle API logo">
+    <h2 class="py-0 mb-0 ms-2 text-light">Chronicle API</h2>
+  </header>
+
+  <main class="container text-black pt-5 d-flex flex-wrap align-items-start align-content-start px-lg-5" style="min-height: 100vh; background-color: #fff;">
+    <section class="d-flex flex-wrap flex-md-nowrap justify-content-evenly pt-2" style="width: 100%">
+      <div class="endpoints mb-2">
+        <h6 class="text-danger">Project Endpoints</h6>
+
+        {% for key, value in project_endpoints.items %}
+          <div class="endpoint row m-0">
+            <p class="key m-0 ps-1 d-none d-lg-block col-lg-3 p-0">{{key}}</p>
+            <p class="value m-0 col-lg-9 p-0 ps-lg-1">{{value}}</p>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="endpoints mb-2">
+        <h6 class="text-danger">Blog Endpoints</h6>
+
+        <div>
+        {% for key, value in blog_endpoints.items %}
+          <div class="endpoint row m-0">
+            <p class="key m-0 ps-1 d-none d-lg-block col-lg-3 p-0">{{key}}</p>
+            <p class="value m-0 p-0 ps-lg-1 col-lg-9">{{value}}</p>
+          </div>
+        {% endfor %}
+        </div>
+      </div>
+    </section>
+
+    <section style="width: 100%; min-width: 240px" class="d-flex justify-content-center mt-lg-4 mt-md-3 mt-sm-2 mt-1">
+      <div style="max-width: 100%;" class="d-flex">
+        <div class="d-flex align-items-center" style="max-width: calc(100% - 2.2em)">
+          <label for="api" id="apid">{{request.get_host}}</label>
+          <div style="width: 100%">
+            <input class="w-100" type="text" name="api" id="api">
+          </div>
+        </div>
+
+        <input type="button" onclick="apiCall()" class="px-0" style="width: 2.2em" value="GET">
+      </div>
+    </section>
+
+    <section style="width: 100%;">
+      <p id="url" class="mb-1"></p>
+      <p id="status" class="mb-1"></p>
+      <p id="content" class="mb-1"></p>
+    </section>
+  </main>
+
+  <script>
+    const renderData = (data, container) => {
+      if (Array.isArray(data)) {
+        const ul = document.createElement("ul");
+        ul.classList.add("array");
+        data.forEach(item => {
+          const li = document.createElement("li");
+          renderData(item, li);
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      } else if (typeof data === "object" && data !== null) {
+        const keys = Object.keys(data);
+        const ul = document.createElement("ul");
+        ul.classList.add("object");
+        keys.forEach(key => {
+          const li = document.createElement("li");
+          li.textContent = `${key}: `;
+          renderData(data[key], li);
+          ul.appendChild(li);
+        });
+        container.appendChild(ul);
+      } else {
+        const span = document.createElement("span");
+        span.textContent = data;
+        container.appendChild(span);
+      }
+    }
+
+    const apiCall = async () => {
+      const queryInput = document.getElementById("api");
+      const [url, status, content] = [
+        document.getElementById("url"),
+        document.getElementById("status"),
+        document.getElementById("content")
+      ]
+      if (queryInput.value == '' || queryInput.value == "/") {
+        return
+      } else {
+        const response = await fetch(queryInput.value, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        })
+          .then(response => {
+            console.log(response);
+            url.innerText = response.url;
+            status.innerText = response.status;
+            return response.json()
+          })
+          .then(data => {
+            renderData(data, content);
+          })
+          .catch(error => content.innerText = error);
+        return response;
+      }
+    }
+  </script>
+</body>
+</html>
