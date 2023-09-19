@@ -1,16 +1,16 @@
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, renderer_classes, permission_classes
 from rest_framework import renderers, parsers, permissions
+import os
 
 
 @api_view(['GET'])
-@renderer_classes([renderers.BrowsableAPIRenderer, renderers.JSONRenderer])
+@renderer_classes([renderers.TemplateHTMLRenderer, renderers.JSONRenderer])
 @permission_classes([permissions.IsAuthenticatedOrReadOnly])
 def index(request):
-    data = [
-        'Hello, welcome to Chronicle API',
-        {
-            'project endpoints': {
+    data = {
+            'message': 'Welcome to Chronicle API',
+            'project_endpoints': {
                 'projects': '/projects/',
                 'project': '/projects/:id/',
                 'sections': '/projects/:id/sections/',
@@ -21,20 +21,17 @@ def index(request):
                 'image': '/projects/:id/images/:id/',
                 'videos': '/projects/:id/videos/',
                 'video': '/projects/:id/videos/:id',
-                'tech': '/projects/:id/tech/'
-            }},
-        {
-            'blog endpoints': {
+                'tech': '/projects/:id/tech/'   
+            },
+            'blog_endpoints': {
                 'categories': '/blog/',
-                'category': '/blog/:category/',
-                'posts': '/blog/:category/posts/',
-                'post': '/blog/:category/posts/:slug/',
-                'contents': '/blog/:category/posts/:slug/:type/',
-                'content': '/blog/:category/posts/:slug/:type/:id/',
-                'related': '/blog/:category/posts/:slug/related/',
-                'change_related': '/blog/:category/posts/:slug/related/:id/'
+                'category': '/blog/:slug/',
+                'posts': '/blog/:slug/posts/',
+                'post': '/blog/:slug/posts/:slug/',
+                'contents': '/blog/:slug/posts/:slug/:type/',
+                'content': '/blog/:slug/posts/:slug/:type/:id/',
+                'related': '/blog/:slug/posts/:slug/related/',
             }
         }
-    ]
 
-    return Response(data)
+    return Response(data=data, template_name='index.html')
