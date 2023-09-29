@@ -30,8 +30,8 @@ jobs:
         source chronicle-env/bin/activate
         pip install -r requirements.txt
         python manage.py makemigrations users
-        python manage.py makemigrations projects
         python manage.py makemigrations contact
+        python manage.py makemigrations projects
         python manage.py makemigrations blog
         python manage.py makemigrations
         python manage.py migrate
