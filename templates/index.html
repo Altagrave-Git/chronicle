@@ -77,6 +77,9 @@
     .boolean {
       color: seagreen;
     }
+    .null {
+      color: chocolate;
+    }
     @media (min-width: 576px) {
       .endpoints {
         width: 45%;
@@ -165,7 +168,7 @@
         const openingBracket = document.createElement("span");
         openingBracket.textContent = "["
         openingBracket.classList.add("bracket");
-        ul.appendChild(openingBracket);
+        container.appendChild(openingBracket);
 
         data.forEach((item, index) => {
           const li = document.createElement("li");
@@ -189,46 +192,53 @@
         ul.appendChild(closingBracket);
         container.appendChild(ul);
 
-      } else if (typeof data === "object" && data !== null) {
-        // Manage object data
-        const keys = Object.keys(data);
-        const ul = document.createElement("ul");
-        ul.classList.add("object");
-        const openingBracket = document.createElement("span");
-        openingBracket.textContent = "{";
-        openingBracket.classList.add("curly");
-        ul.appendChild(openingBracket);
-
-        keys.forEach((key, index) => {
-          const li = document.createElement("li");
-          li.classList.add("flex");
-          li.innerHTML = `<span class="object-key me-2">${key}:</span>`;
-          if (Array.isArray(data[key]) && !data[key].length) {
-            const emptyList = document.createElement("span");
-            emptyList.classList.add("bracket");
-            emptyList.innerHTML = "[]<span class='comma'>,</span>";
-            li.appendChild(emptyList);
-            ul.appendChild(li);
-          } else {
-            renderData(data[key], li);
-            ul.appendChild(li);
+      } else if (typeof data === "object") {
+        if (data !== null) {
+          // Manage object data
+          const keys = Object.keys(data);
+          const ul = document.createElement("ul");
+          ul.classList.add("object");
+          const openingBracket = document.createElement("span");
+          openingBracket.textContent = "{";
+          openingBracket.classList.add("curly");
+          container.appendChild(openingBracket);
   
-            if (index < keys.length - 1) {
-              if (typeof data[key] != 'object') {
-                const comma = document.createElement("span");
-                comma.textContent = ",";
-                comma.classList.add("comma");
-                li.appendChild(comma);
+          keys.forEach((key, index) => {
+            const li = document.createElement("li");
+            li.classList.add("flex");
+            li.innerHTML = `<span class="object-key me-2">${key}:</span>`;
+            if (Array.isArray(data[key]) && !data[key].length) {
+              const emptyList = document.createElement("span");
+              emptyList.classList.add("bracket");
+              emptyList.innerHTML = "[]<span class='comma'>,</span>";
+              li.appendChild(emptyList);
+              ul.appendChild(li);
+            } else {
+              renderData(data[key], li);
+              ul.appendChild(li);
+    
+              if (index < keys.length - 1) {
+                if (typeof data[key] != 'object') {
+                  const comma = document.createElement("span");
+                  comma.textContent = ",";
+                  comma.classList.add("comma");
+                  li.appendChild(comma);
+                }
               }
             }
-          }
-        });
-
-        const closingBracket = document.createElement("span");
-        closingBracket.innerHTML = "}<span class='comma'>,</span>";
-        closingBracket.classList.add("bracket");
-        ul.appendChild(closingBracket);
-        container.appendChild(ul);
+          });
+  
+          const closingBracket = document.createElement("span");
+          closingBracket.innerHTML = "}<span class='comma'>,</span>";
+          closingBracket.classList.add("bracket");
+          ul.appendChild(closingBracket);
+          container.appendChild(ul);
+        } else {
+          const span = document.createElement("span");
+          span.classList.add("null");
+          span.textContent = "null";
+          container.appendChild(span);
+        }
       } else {
         const span = document.createElement("span");
         span.classList.add(typeof data);
