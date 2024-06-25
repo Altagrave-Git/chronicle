@@ -18,6 +18,7 @@ from oauth2_provider.models import AccessToken
 
 CLIENT_ID = settings.CLIENT_ID
 CLIENT_SECRET = settings.CLIENT_SECRET
+AUTH_SERVER_URI = settings.AUTH_SERVER_URI
 REDIRECT_URI = settings.REDIRECT_URI
 
 CODE_VERIFIER = ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(random.randint(43, 128)))
@@ -26,7 +27,7 @@ CODE_VERIFIER = base64.urlsafe_b64encode(CODE_VERIFIER.encode('utf-8'))
 CODE_CHALLENGE = hashlib.sha256(CODE_VERIFIER).digest()
 CODE_CHALLENGE = base64.urlsafe_b64encode(CODE_CHALLENGE).decode('utf-8').replace('=', '')
 
-auth_url = "https://echonetwork.app/o/authorize/?response_type=code&code_challenge={}&code_challenge_method=S256&client_id={}&redirect_uri={}".format(CODE_CHALLENGE, CLIENT_ID, REDIRECT_URI)
+auth_url = "{}/o/authorize/?response_type=code&code_challenge={}&code_challenge_method=S256&client_id={}&redirect_uri={}".format(AUTH_SERVER_URI, CODE_CHALLENGE, CLIENT_ID, REDIRECT_URI)
 
 
 @permission_classes([permissions.AllowAny])
@@ -64,7 +65,7 @@ def auth_view(request):
                 "grant_type": "authorization_code",
             }
 
-            auth_request = requests.post("https://echonetwork.app/o/token/", headers=headers, data=data)
+            auth_request = requests.post(f"{AUTH_SERVER_URI}/o/token/", headers=headers, data=data)
 
             # pull tokens from the response
             access_token = auth_request.json().get("access_token")
@@ -209,7 +210,7 @@ def logout_view(request):
             "client_secret": CLIENT_SECRET,
         }
 
-        url = "https://echonetwork.app/o/revoke_token/"
+        url = f"{AUTH_SERVER_URI}/o/revoke_token/"
 
         revoke_request = requests.post(url, headers=headers, data=data)
 

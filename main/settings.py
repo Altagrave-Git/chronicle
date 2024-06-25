@@ -50,14 +50,20 @@ if DEBUG:
         'http://localhost:3000',
         'https://echonetwork.app',
         'https://www.echonetwork.app',
+        'https://turcotte.tech',
+        'https://www.turcotte.tech',
+        'https://social.turcotte.tech',
+        'https://echo.turcotte.tech',
     ]
 
 else:
     CORS_ALLOWED_ORIGINS = [
-        'https://turcotte.tech',
-        'https://www.turcotte.tech',
         'https://echonetwork.app',
         'https://www.echonetwork.app',
+        'https://turcotte.tech',
+        'https://www.turcotte.tech',
+        'https://social.turcotte.tech',
+        'https://echo.turcotte.tech',
     ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -117,6 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 CLIENT_ID = os.environ.get("CLIENT_ID")
 CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+AUTH_SERVER_URI = os.environ.get("AUTH_SERVER_URI")
 REDIRECT_URI = os.environ.get("REDIRECT_URI")
 SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY')
 
@@ -138,7 +145,7 @@ REST_FRAMEWORK = {
 }
 
 OAUTH2_PROVIDER = {
-    'RESOURCE_SERVER_INTROSPECTION_URL': 'https://echonetwork.app/o/introspect/',
+    'RESOURCE_SERVER_INTROSPECTION_URL': f'{AUTH_SERVER_URI}/o/introspect/',
     'RESOURCE_SERVER_INTROSPECTION_CREDENTIALS': (CLIENT_ID, CLIENT_SECRET)
 }
 
